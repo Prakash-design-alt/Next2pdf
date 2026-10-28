@@ -83,19 +83,28 @@ input,select{border-color:#d1d5db;border-radius:6px}
 .box{border-radius:12px}
 #wrap{display:flex;min-height:0;min-width:0}#wrap>#ws{flex:1}#hud{left:12px}
 #gbtn{min-width:220px;display:flex;justify-content:flex-end}#who:empty{display:none}
-#gate{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#111827,#1e3a8a);padding:20px}
+#gate{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:#f3f4f6;padding:20px}
 #gate .gbox{background:#fff;border-radius:16px;padding:36px 30px;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.35)}
 #gate h2{margin:0 0 8px;font-size:1.35rem;color:#111827}
 #gate p{margin:0 0 22px;color:#6b7280;font-size:.9rem;line-height:1.5}
-#gate #gbtn{display:flex;justify-content:center}
+#gate input{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.95rem;margin-bottom:10px;text-align:left}
+#gate .big{width:100%;padding:11px;font-size:.95rem;margin:0 0 4px}
+#gate .link{background:none;border:0;color:#2563eb;box-shadow:none;padding:6px;font-size:.85rem;margin-bottom:8px}
+#gate .or{color:#9ca3af;font-size:.8rem;margin:12px 0}
+#gate .gl{background:#fff;color:#111827;border:1px solid #d1d5db}
 </style>
 </head>
 <body>
 <div id="gate">
   <div class="gbox">
     <h2>Sign in to Advanced PDF Editor</h2>
-    <p>Sign in with Google to continue. Your PDF files never leave your browser.</p>
-    <div id="gbtn"></div>
+    <p id="gsub">Sign in to continue. Your PDF files never leave your browser.</p>
+    <input id="gem" type="email" placeholder="Email" autocomplete="email">
+    <input id="gpw" type="password" placeholder="Password (min. 6 characters)" autocomplete="current-password">
+    <button id="gggo" class="p big">Sign in</button>
+    <button id="gtog" class="link">New here? Create an account</button>
+    <div class="or">or</div>
+    <button id="ggl" class="big gl">Continue with Google</button>
     <p id="gmsg" style="margin:14px 0 0;color:#dc2626;min-height:1em"></p>
   </div>
 </div>
@@ -167,21 +176,60 @@ input,select{border-color:#d1d5db;border-radius:6px}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
-const GOOGLE_CLIENT_ID='340823429648-6hk8toobljqqj0glviev5533udkpglps.apps.googleusercontent.com';
-function parseJwt(t){
-  const b=t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
-  return JSON.parse(decodeURIComponent(atob(b).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+const firebaseConfig={
+  apiKey:"AIzaSyAD2JTDVAOOnmt5ggg9h4lxaLBAB2-CJ5s",
+  authDomain:"next2pdf-91479.firebaseapp.com",
+  projectId:"next2pdf-91479",
+  storageBucket:"next2pdf-91479.firebasestorage.app",
+  messagingSenderId:"1030738699284",
+  appId:"1:1030738699284:web:112e137afd9e9f9b96f301"
+};
+firebase.initializeApp(firebaseConfig);
+const fauth=firebase.auth();
+let signUpMode=false;
+const gErr=m=>$('#gmsg').textContent=m;
+function friendlyErr(e){
+  const m={
+    'auth/invalid-email':'That email address is not valid.',
+    'auth/email-already-in-use':'An account already exists with this email.',
+    'auth/weak-password':'Password must be at least 6 characters.',
+    'auth/invalid-credential':'Email or password is incorrect.',
+    'auth/wrong-password':'Email or password is incorrect.',
+    'auth/user-not-found':'Email or password is incorrect.',
+    'auth/too-many-requests':'Too many attempts. Please wait a few minutes and try again.',
+    'auth/popup-closed-by-user':'Google sign-in was cancelled.',
+    'auth/unauthorized-domain':'This site is not authorized in Firebase. Add its domain under Authentication → Settings → Authorized domains.'
+  };
+  return m[e.code]||e.message;
 }
-window.addEventListener('load',()=>{
-  if(!window.google){$('#gmsg').textContent='Sign-in could not load. Check your internet connection and refresh.';return}
-  google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:r=>{
-    const u=parseJwt(r.credential);
-    $('#who').textContent=u.name||u.email;$('#out').hidden=false;$('#gate').hidden=true;$('#gmsg').textContent='';
-  }});
-  google.accounts.id.renderButton($('#gbtn'),{theme:'filled_black',size:'large',text:'signin_with',width:260});
-  $('#out').onclick=()=>{google.accounts.id.disableAutoSelect();$('#who').textContent='';$('#out').hidden=true;$('#gate').hidden=false};
+$('#gtog').onclick=()=>{
+  signUpMode=!signUpMode;
+  $('#gsub').textContent=signUpMode?'Create a free account with your email.':'Sign in to continue. Your PDF files never leave your browser.';
+  $('#gggo').textContent=signUpMode?'Create account':'Sign in';
+  $('#gtog').textContent=signUpMode?'Already have an account? Sign in':'New here? Create an account';
+  gErr('');
+};
+$('#gggo').onclick=async()=>{
+  const em=$('#gem').value.trim(),pw=$('#gpw').value;
+  if(!em||!pw)return gErr('Enter your email and password.');
+  gErr('');
+  try{
+    if(signUpMode)await fauth.createUserWithEmailAndPassword(em,pw);
+    else await fauth.signInWithEmailAndPassword(em,pw);
+  }catch(e){gErr(friendlyErr(e))}
+};
+$('#ggl').onclick=async()=>{
+  gErr('');
+  try{await fauth.signInWithPopup(new firebase.auth.GoogleAuthProvider())}catch(e){gErr(friendlyErr(e))}
+};
+$('#out').onclick=()=>fauth.signOut();
+fauth.onAuthStateChanged(u=>{
+  $('#gate').hidden=!!u;
+  $('#out').hidden=!u;
+  $('#who').textContent=u?(u.displayName||u.email):'';
 });
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const $=s=>document.querySelector(s),ov=$('#ov'),pgc=$('#pg'),ta=$('#ti'),mc=document.createElement('canvas').getContext('2d');
