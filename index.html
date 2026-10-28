@@ -101,11 +101,13 @@ input,select{border-color:#d1d5db;border-radius:6px}
     <p id="gsub">Sign in to continue. Your PDF files never leave your browser.</p>
     <input id="gem" type="email" placeholder="Email" autocomplete="email">
     <input id="gpw" type="password" placeholder="Password (min. 6 characters)" autocomplete="current-password">
+    <label id="gcap" hidden style="display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 12px;font-size:.9rem;color:#374151;cursor:pointer"><input id="gnot" type="checkbox" style="width:auto;margin:0">I'm not a robot</label>
     <button id="gggo" class="p big">Sign in</button>
     <button id="gtog" class="link">New here? Create an account</button>
     <div class="or">or</div>
     <button id="ggl" class="big gl">Continue with Google</button>
     <p id="gmsg" style="margin:14px 0 0;color:#dc2626;min-height:1em"></p>
+    <button id="gresend" class="link" hidden>Resend verification email</button>
   </div>
 </div>
 <header>
@@ -203,17 +205,28 @@ function friendlyErr(e){
     'auth/invalid-credential':'Email or password is incorrect.',
     'auth/wrong-password':'Email or password is incorrect.',
     'auth/user-not-found':'Email or password is incorrect.',
-    'auth/too-many-requests':'Too many attempts. Please wait a few minutes and try again.',
+    'auth/too-many-requests':'Too many emails sent. Please wait a few minutes before trying again.',
     'auth/popup-closed-by-user':'Google sign-in was cancelled.',
     'auth/unauthorized-domain':'This site is not authorized in Firebase. Add its domain under Authentication → Settings → Authorized domains.'
   };
   return m[e.code]||e.message;
+}
+function applyUser(u){
+  const ok=!!u&&(u.emailVerified||u.providerData.some(p=>p.providerId!=='password'));
+  $('#gate').hidden=ok;
+  $('#out').hidden=!u;
+  $('#who').textContent=u?(u.displayName||u.email):'';
+  $('#gresend').hidden=!(u&&!ok);
+  if(u&&!ok)gErr('Verify your email first. Click the link we sent to '+u.email+', then press Sign in.');
+  else gErr('');
 }
 $('#gtog').onclick=()=>{
   signUpMode=!signUpMode;
   $('#gsub').textContent=signUpMode?'Create a free account with your email.':'Sign in to continue. Your PDF files never leave your browser.';
   $('#gggo').textContent=signUpMode?'Create account':'Sign in';
   $('#gtog').textContent=signUpMode?'Already have an account? Sign in':'New here? Create an account';
+  $('#gcap').hidden=!signUpMode;
+  $('#gnot').checked=false;
   gErr('');
 };
 $('#gggo').onclick=async()=>{
@@ -222,8 +235,17 @@ $('#gggo').onclick=async()=>{
   if(!em||!pw)return gErr('Enter your email and password.');
   gErr('');
   try{
-    if(signUpMode)await fauth.createUserWithEmailAndPassword(em,pw);
-    else await fauth.signInWithEmailAndPassword(em,pw);
+    if(signUpMode){
+      if(!$('#gnot').checked)return gErr('Please tick "I\'m not a robot" first.');
+      const c=await fauth.createUserWithEmailAndPassword(em,pw);
+      await c.user.sendEmailVerification();
+      applyUser(c.user);
+      gErr('We sent a verification link to '+em+'. Click it, then press Sign in.');
+    }else{
+      const c=await fauth.signInWithEmailAndPassword(em,pw);
+      await c.user.reload();
+      applyUser(fauth.currentUser);
+    }
   }catch(e){gErr(friendlyErr(e))}
 };
 $('#ggl').onclick=async()=>{
@@ -231,12 +253,14 @@ $('#ggl').onclick=async()=>{
   gErr('');
   try{await fauth.signInWithPopup(new firebase.auth.GoogleAuthProvider())}catch(e){gErr(friendlyErr(e))}
 };
+$('#gresend').onclick=async()=>{
+  const u=fauth&&fauth.currentUser;
+  if(!u)return gErr('Press Sign in first, then resend.');
+  try{await u.sendEmailVerification();gErr('Verification email sent again to '+u.email+'.')}
+  catch(e){gErr(friendlyErr(e))}
+};
 $('#out').onclick=()=>{if(fauth)fauth.signOut()};
-if(fauth)fauth.onAuthStateChanged(u=>{
-  $('#gate').hidden=!!u;
-  $('#out').hidden=!u;
-  $('#who').textContent=u?(u.displayName||u.email):'';
-});
+if(fauth)fauth.onAuthStateChanged(applyUser);
 const SRC=[],LIB={};
 let pages=[],cur=0,tool='select',zoom=1.2,sel=null,undo=[],redo=[],pend=null,uid=0,name='document.pdf',rt=0,task=null,drag=null,st=null,before=null,mode=null,moved=false,rr=1,tedit=null;
 let hlc='#facc15';
