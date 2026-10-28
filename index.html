@@ -179,6 +179,8 @@ input,select{border-color:#d1d5db;border-radius:6px}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const $=s=>document.querySelector(s),ov=$('#ov'),pgc=$('#pg'),ta=$('#ti'),mc=document.createElement('canvas').getContext('2d');
 const firebaseConfig={
   apiKey:"AIzaSyAD2JTDVAOOnmt5ggg9h4lxaLBAB2-CJ5s",
   authDomain:"next2pdf-91479.firebaseapp.com",
@@ -187,8 +189,10 @@ const firebaseConfig={
   messagingSenderId:"1030738699284",
   appId:"1:1030738699284:web:112e137afd9e9f9b96f301"
 };
-firebase.initializeApp(firebaseConfig);
-const fauth=firebase.auth();
+let fauth=null;
+try{firebase.initializeApp(firebaseConfig);fauth=firebase.auth()}
+catch(e){console.error(e);setTimeout(()=>gErr('Sign-in could not start. Check your internet connection and refresh the page.'),0)}
+const needAuth=()=>{if(!fauth){gErr('Sign-in is not available. Check your internet connection and refresh the page.');return true}return false};
 let signUpMode=false;
 const gErr=m=>$('#gmsg').textContent=m;
 function friendlyErr(e){
@@ -213,6 +217,7 @@ $('#gtog').onclick=()=>{
   gErr('');
 };
 $('#gggo').onclick=async()=>{
+  if(needAuth())return;
   const em=$('#gem').value.trim(),pw=$('#gpw').value;
   if(!em||!pw)return gErr('Enter your email and password.');
   gErr('');
@@ -222,17 +227,16 @@ $('#gggo').onclick=async()=>{
   }catch(e){gErr(friendlyErr(e))}
 };
 $('#ggl').onclick=async()=>{
+  if(needAuth())return;
   gErr('');
   try{await fauth.signInWithPopup(new firebase.auth.GoogleAuthProvider())}catch(e){gErr(friendlyErr(e))}
 };
-$('#out').onclick=()=>fauth.signOut();
-fauth.onAuthStateChanged(u=>{
+$('#out').onclick=()=>{if(fauth)fauth.signOut()};
+if(fauth)fauth.onAuthStateChanged(u=>{
   $('#gate').hidden=!!u;
   $('#out').hidden=!u;
   $('#who').textContent=u?(u.displayName||u.email):'';
 });
-pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-const $=s=>document.querySelector(s),ov=$('#ov'),pgc=$('#pg'),ta=$('#ti'),mc=document.createElement('canvas').getContext('2d');
 const SRC=[],LIB={};
 let pages=[],cur=0,tool='select',zoom=1.2,sel=null,undo=[],redo=[],pend=null,uid=0,name='document.pdf',rt=0,task=null,drag=null,st=null,before=null,mode=null,moved=false,rr=1,tedit=null;
 let hlc='#facc15';
