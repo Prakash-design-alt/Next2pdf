@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drive Gallery</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; background: #111; color: #eee; }
+  header { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 10px;
+           align-items: center; padding: 12px 16px; background: #1c1c1c; }
+  button { padding: 8px 14px; border: none; border-radius: 6px; background: #3b82f6; color: #fff; cursor: pointer; }
+  button:hover { background: #2563eb; }
+  button:disabled { background: #444; cursor: default; }
+  #logoutBtn { background: #374151; }
+  #logoutBtn:hover { background: #4b5563; }
+  #searchInput { padding: 8px 10px; border-radius: 6px; border: 1px solid #333; background: #111; color: #eee;
+                 flex: 1; min-width: 180px; max-width: 360px; }
+  #status { font-size: 14px; opacity: .8; margin-left: auto; }
+  #crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 16px; background: #181818; font-size: 14px; }
+  #crumbs a { color: #93c5fd; cursor: pointer; }
+  #crumbs a:hover { text-decoration: underline; }
+  #crumbs .sep { opacity: .5; }
+  #list { padding: 8px 0; }
+  .row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid #222; cursor: pointer; }
+  .row:hover { background: #1d1d1d; }
+  .icon { width: 28px; text-align: center; font-size: 20px; flex-shrink: 0; }
+  .name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .where { font-size: 12px; opacity: .5; max-width: 40%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .type { font-size: 12px; opacity: .6; flex-shrink: 0; }
+  .dl { padding: 4px 10px; font-size: 13px; background: #374151; flex-shrink: 0; }
+  .dl:hover { background: #4b5563; }
+
+  #loginBox { max-width: 340px; margin: 80px auto; padding: 24px; background: #1c1c1c; border-radius: 10px; text-align: center; }
+  #loginBox h3 { margin-top: 0; }
+  #googleBtn { width: 100%; padding: 12px; background: #fff; color: #111; font-weight: 600; }
+  #googleBtn:hover { background: #e5e7eb; }
+  #loginErr { color: #f87171; font-size: 14px; min-height: 18px; margin-top: 12px; }
+  #appBox { display: none; }
+
+  #viewer { position: fixed; inset: 0; background: rgba(0,0,0,.92); display: none; z-index: 10; }
+  #viewer.show { display: block; }
+  #viewerBar { position: sticky; top: 0; display: flex; align-items: center; gap: 12px;
+               padding: 10px 16px; background: #1c1c1c; z-index: 2; }
+  #viewerTitle { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #viewerScroll { height: calc(100% - 52px); overflow: auto; text-align: center; padding: 12px 0; }
+  #viewerScroll canvas { display: block; margin: 0 auto 12px auto; max-width: 100%; height: auto; background: #fff; border-radius: 4px; }
+  #viewerImgWrap { display: none; height: calc(100% - 52px); align-items: center; justify-content: center; }
+  #viewerImg { max-width: 95vw; max-height: 90vh; border-radius: 4px; display: none; }
+</style>
+</head>
+<body>
+
+<div id="loginBox">
+  <h3>Sign in</h3>
+  <button id="googleBtn">Sign in with Google</button>
+  <div id="loginErr"></div>
+</div>
+
+<div id="appBox">
+  <header>
+    <button id="backBtn" disabled>Back</button>
+    <button id="reloadBtn">Refresh</button>
+    <input id="searchInput" type="search" placeholder="Search folders or files">
+    <button id="searchBtn">Search</button>
+    <span id="status"></span>
+    <button id="logoutBtn">Sign out</button>
+  </header>
+  <div id="crumbs"></div>
+  <div id="list"></div>
+</div>
+
+<div id="viewer">
+  <div id="viewerBar">
+    <span id="viewerTitle"></span>
+    <button id="closeBtn">Close</button>
+  </div>
+  <div id="viewerScroll"></div>
+  <div id="viewerImgWrap"><img id="viewerImg" alt=""></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+// Firebase project: next2pdf-91479
+firebase.initializeApp({
+  apiKey: 'AIzaSyAD2JTDVAOOnmt5ggg9h4lxaLBAB2-CJ5s',
+  authDomain: 'next2pdf-91479.firebaseapp.com',
+  projectId: 'next2pdf-91479'
+});
+
+// Apps Script backend (paste your Web app URL, ending in /exec)
+const API_URL = 'https://script.google.com/macros/s/AKfycbz3aKtS-j9NusJxNbyQkwXTybXluoqghw4uXTq1wp3mb3UcIEiKqw1g3IBSMvnL816KwQ/exec';
+
+const loginBox = document.getElementById('loginBox');
+const appBox = document.getElementById('appBox');
+const loginErr = document.getElementById('loginErr');
+const listEl = document.getElementById('list');
+const statusEl = document.getElementById('status');
+const crumbsEl = document.getElementById('crumbs');
+const viewer = document.getElementById('viewer');
+const viewerTitle = document.getElementById('viewerTitle');
+const viewerScroll = document.getElementById('viewerScroll');
+const viewerImg = document.getElementById('viewerImg');
+const viewerImgWrap = document.getElementById('viewerImgWrap');
+const backBtn = document.getElementById('backBtn');
+const searchInput = document.getElementById('searchInput');
+const googleBtn = document.getElementById('googleBtn');
+
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+let stack = [];
+let rootId = null;
+let started = false;
+const folderCache = new Map();
+
+function setStatus(t) { statusEl.textContent = t; }
+function current() { return stack[stack.length - 1]; }
+
+// Sends a request to the Apps Script backend with the user's login token
+async function runServer(fn, ...args) {
+  const user = firebase.auth().currentUser;
+  if (!user) throw new Error('Please sign in');
+  const token = await user.getIdToken();
+  const resp = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ fn: fn, token: token, args: args })
+  });
+  const data = await resp.json();
+  if (!data.ok) throw new Error(data.error);
+  return data.result;
+}
+
+// Login
+
+function friendlyError(e) {
+  const c = e && e.code ? e.code : '';
+  if (c === 'auth/popup-blocked') return 'The sign-in window was blocked. Allow pop-ups for this page and try again.';
+  if (c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request') return '';
+  if (c === 'auth/unauthorized-domain') return 'This domain is not authorized in Firebase.';
+  if (c === 'auth/network-request-failed') return 'Network error. Check your connection.';
+  return 'Sign-in failed. Please try again.';
+}
+
+function doGoogleSignIn() {
+  loginErr.textContent = '';
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  firebase.auth().signInWithPopup(provider)
+    .catch(e => { loginErr.textContent = friendlyError(e); });
+}
+
+googleBtn.onclick = doGoogleSignIn;
+document.getElementById('logoutBtn').onclick = () => firebase.auth().signOut();
+
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    loginBox.style.display = 'none';
+    appBox.style.display = 'block';
+    if (!started) {
+      started = true;
+      start();
+    }
+  } else {
+    appBox.style.display = 'none';
+    loginBox.style.display = 'block';
+    started = false;
+    stack = [];
+    folderCache.clear();
+    listEl.innerHTML = '';
+    crumbsEl.innerHTML = '';
+    setStatus('');
+  }
+});
+
+async function start() {
+  try {
+    rootId = await runServer('getRootId');
+    stack = [{ id: rootId, name: 'Home' }];
+    loadCurrent();
+  } catch (e) {
+    if (String(e.message).indexOf('Access denied') !== -1) {
+      loginErr.textContent = 'This Google account is not allowed. Sign in with an approved account.';
+      firebase.auth().signOut();
+    } else {
+      setStatus('Error: ' + e.message);
+    }
+  }
+}
+
+// Navigation
+
+function renderCrumbs() {
+  crumbsEl.innerHTML = '';
+  stack.forEach((f, i) => {
+    if (i > 0) {
+      const sep = document.createElement('span');
+      sep.className = 'sep';
+      sep.textContent = '›';
+      crumbsEl.appendChild(sep);
+    }
+    const a = document.createElement('a');
+    a.textContent = f.name;
+    a.onclick = () => { stack = stack.slice(0, i + 1); loadCurrent(); };
+    crumbsEl.appendChild(a);
+  });
+  backBtn.disabled = stack.length <= 1;
+}
+
+function goInto(folder) { stack.push(folder); loadCurrent(); }
+function goBack() { if (stack.length > 1) { stack.pop(); loadCurrent(); } }
+
+function render(res) {
+  listEl.innerHTML = '';
+  res.folders.forEach(addFolderRow);
+  res.files.forEach(addFileRow);
+  setStatus(res.folders.length + ' folders, ' + res.files.length + ' files');
+}
+
+function loadCurrent() {
+  const id = current().id;
+  renderCrumbs();
+
+  const cached = folderCache.get(id);
+  if (cached) {
+    render(cached);
+  } else {
+    listEl.innerHTML = '';
+    setStatus('Loading...');
+  }
+
+  runServer('listFolder', id)
+    .then(res => {
+      folderCache.set(id, res);
+      if (current().id === id) render(res);
+    })
+    .catch(e => { if (!cached) setStatus('Error: ' + e.message); });
+}
+
+function addRow(icon, name, type, onClick, onDownload, where) {
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.innerHTML = '<span class="icon"></span><span class="name"></span><span class="where"></span><span class="type"></span>';
+  row.querySelector('.icon').textContent = icon;
+  row.querySelector('.name').textContent = name;
+  row.querySelector('.where').textContent = where || '';
+  row.querySelector('.type').textContent = type;
+  row.onclick = onClick;
+  if (onDownload) {
+    const btn = document.createElement('button');
+    btn.className = 'dl';
+    btn.textContent = '⬇ Download';
+    btn.onclick = e => { e.stopPropagation(); onDownload(); };
+    row.appendChild(btn);
+  }
+  listEl.appendChild(row);
+}
+
+function addFolderRow(f) {
+  addRow('📁', f.name, 'Folder', () => goInto({ id: f.id, name: f.name }));
+}
+
+function addFileRow(f) {
+  const isPdf = f.mime === 'application/pdf';
+  addRow(isPdf ? '📄' : '🖼️', f.name, isPdf ? 'PDF' : 'Image',
+         () => openItem(f), () => downloadFile(f));
+}
+
+function openItem(f) {
+  return f.mime === 'application/pdf' ? openPdf(f) : openImage(f);
+}
+
+// Search
+
+function doSearch() {
+  const term = searchInput.value.trim();
+  if (!term) { loadCurrent(); return; }
+  listEl.innerHTML = '';
+  crumbsEl.innerHTML = '<span>Search results for "' + term.replace(/</g, '&lt;') + '"</span>';
+  backBtn.disabled = true;
+  setStatus('Searching...');
+  runServer('searchItems', term)
+    .then(res => {
+      if (!res.length) setStatus('No matches');
+      res.forEach(r => {
+        const where = ['Home'].concat(r.where.map(p => p.name)).join(' › ');
+        const icon = r.isFolder ? '📁' : (r.mime === 'application/pdf' ? '📄' : '🖼️');
+        const type = r.isFolder ? 'Folder' : (r.mime === 'application/pdf' ? 'PDF' : 'Image');
+        addRow(icon, r.name, type, () => openResult(r),
+               r.isFolder ? null : () => downloadFile({ id: r.id, name: r.name }), where);
+      });
+      if (res.length) setStatus(res.length + ' matches');
+    })
+    .catch(e => setStatus('Error: ' + e.message));
+}
+
+function openResult(r) {
+  searchInput.value = '';
+  stack = [{ id: rootId, name: 'Home' }].concat(r.goto);
+  loadCurrent();
+  if (!r.isFolder) openItem({ id: r.id, name: r.name, mime: r.mime });
+}
+
+// Download and viewer
+
+function base64ToBytes(b64) {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+async function downloadFile(f) {
+  setStatus('Preparing ' + f.name + '...');
+  try {
+    const res = await runServer('getImageData', f.id);
+    const url = URL.createObjectURL(new Blob([base64ToBytes(res.data)], { type: res.mime }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = f.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    setStatus('Downloaded ' + f.name);
+  } catch (e) {
+    setStatus('Download failed: ' + e.message);
+  }
+}
+
+async function openPdf(f) {
+  const prev = statusEl.textContent;
+  setStatus('Opening ' + f.name + '...');
+  try {
+    if (!window.pdfjsLib) throw new Error('PDF viewer library did not load');
+    const res = await runServer('getViewData', f.id);
+    const pdf = await pdfjsLib.getDocument({ data: base64ToBytes(res.data) }).promise;
+
+    viewerTitle.textContent = f.name + ' (' + pdf.numPages + ' pages)';
+    viewerScroll.innerHTML = '';
+    viewerScroll.style.display = 'block';
+    viewerImgWrap.style.display = 'none';
+    viewer.classList.add('show');
+
+    const width = Math.min(window.innerWidth * 0.95, 1000);
+    for (let n = 1; n <= pdf.numPages; n++) {
+      const page = await pdf.getPage(n);
+      const base = page.getViewport({ scale: 1 });
+      const scale = (width / base.width) * (window.devicePixelRatio > 1 ? 1.5 : 1);
+      const viewport = page.getViewport({ scale: scale });
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      viewerScroll.appendChild(canvas);
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
+    }
+    setStatus(prev);
+  } catch (e) {
+    setStatus('Could not open ' + f.name + ': ' + e.message);
+  }
+}
+
+async function openImage(f) {
+  const prev = statusEl.textContent;
+  setStatus('Opening ' + f.name + '...');
+  try {
+    const res = await runServer('getViewData', f.id);
+    viewerTitle.textContent = f.name;
+    viewerScroll.style.display = 'none';
+    viewerImgWrap.style.display = 'flex';
+    viewerImg.style.display = 'block';
+    viewerImg.src = 'data:' + res.mime + ';base64,' + res.data;
+    viewer.classList.add('show');
+    setStatus(prev);
+  } catch (e) {
+    setStatus('Could not open ' + f.name);
+  }
+}
+
+function closeViewer() {
+  viewer.classList.remove('show');
+  viewerScroll.innerHTML = '';
+  viewerImg.src = '';
+}
+
+// Events
+
+backBtn.onclick = goBack;
+document.getElementById('reloadBtn').onclick = loadCurrent;
+document.getElementById('closeBtn').onclick = closeViewer;
+document.getElementById('searchBtn').onclick = doSearch;
+searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+</script>
+</body>
+</html>
