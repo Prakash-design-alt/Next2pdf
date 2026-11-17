@@ -390,11 +390,24 @@ async function runServer(fn, ...args) {
   const user = firebase.auth().currentUser;
   if (!user) throw new Error('Please sign in');
   const token = await user.getIdToken();
-  const resp = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ fn: fn, token: token, args: args })
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
+  let resp;
+  try {
+    resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ fn: fn, token: token, args: args }),
+      signal: controller.signal
+    });
+  } catch (err) {
+    if (err && err.name === 'AbortError') {
+      throw new Error('The server took more than 60 seconds to return the file. Please try again or check the Apps Script deployment.');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
   const text = await resp.text();
   let data;
   try {
@@ -688,110 +701,149 @@ async function downloadFile(f) {
   }
 }
 
-// Open the print window directly inside the user's click event.
-// This is important because Google Sites embeds this page in an iframe,
-// and browsers may block window.print() when it is called after async work.
+// Open the print window directly from the user's click.
+// The user will press Print Now in that window after the document is ready.
 function startPrint(f) {
   const printWindow = window.open('', '_blank');
   if (!printWindow) {
-    setStatus('Print window was blocked. Allow pop-ups for this Google Sites page, then try again.');
+    setStatus('Print window blocked. Allow pop-ups for Google Sites and try again.');
     return;
   }
+
   printWindow.document.open();
   printWindow.document.write(
     '<!doctype html><html><head><meta charset="utf-8">' +
     '<meta name="viewport" content="width=device-width,initial-scale=1">' +
     '<title>Preparing print...</title>' +
-    '<style>body{font-family:Arial,sans-serif;margin:20px;color:#333}' +
-    '.msg{text-align:center;margin:40px auto}img{display:block;max-width:100%;max-height:100%;object-fit:contain}' +
-    '.sheet{height:100vh;width:100%;display:flex;align-items:center;justify-content:center;' +
-    'break-after:page;page-break-after:always;overflow:hidden}' +
+    '<style>' +
+    'body{font-family:Arial,sans-serif;margin:0;background:#f1f5f9;color:#1e293b}' +
+    '#printStatus{padding:28px;text-align:center;font-size:16px}' +
+    '#printToolbar{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid #ddd;' +
+    'padding:12px 18px;display:flex;align-items:center;gap:12px}' +
+    '#printToolbar button{border:0;border-radius:8px;padding:10px 18px;background:#2563eb;color:#fff;' +
+    'font-size:15px;font-weight:600;cursor:pointer}' +
+    '#printToolbar button:disabled{opacity:.5;cursor:wait}' +
+    '#printHint{font-size:13px;color:#64748b}' +
+    '#printPages{padding:18px;display:flex;flex-direction:column;align-items:center;gap:18px}' +
+    '.sheet{width:100%;min-height:90vh;background:#fff;display:flex;align-items:center;' +
+    'justify-content:center;overflow:hidden;break-after:page;page-break-after:always}' +
     '.sheet:last-child{break-after:auto;page-break-after:auto}' +
-    '@media print{body{margin:0}.sheet{height:100vh;width:100vw}}' +
-    '</style></head><body><div class="msg">Preparing your document for printing...</div></body></html>'
+    '.sheet img{max-width:100%;max-height:95vh;width:auto;height:auto;display:block;object-fit:contain}' +
+    '#printError{display:none;color:#b91c1c;padding:20px;text-align:center;white-space:pre-wrap}' +
+    '@media print{' +
+    '@page{margin:0}' +
+    'body{background:#fff}' +
+    '#printToolbar,#printStatus,#printError{display:none!important}' +
+    '#printPages{padding:0;gap:0}' +
+    '.sheet{width:100vw;height:100vh;min-height:0;margin:0;break-after:page;page-break-after:always}' +
+    '.sheet:last-child{break-after:auto;page-break-after:auto}' +
+    '.sheet img{max-width:100%;max-height:100%;}' +
+    '}' +
+    '</style></head><body>' +
+    '<div id="printToolbar"><button id="printNow" disabled>Preparing…</button>' +
+    '<span id="printHint">Please wait while the document is loaded.</span></div>' +
+    '<div id="printStatus">Preparing your document for printing…</div>' +
+    '<div id="printError"></div><main id="printPages"></main>' +
+    '<script>document.getElementById("printNow").addEventListener("click",function(){window.focus();window.print();});<\/script>' +
+    '</body></html>'
   );
   printWindow.document.close();
   printFile(f, printWindow);
 }
 
+function updatePrintWindow(printWindow, message, isError) {
+  try {
+    if (!printWindow || printWindow.closed) return;
+    const status = printWindow.document.getElementById('printStatus');
+    const error = printWindow.document.getElementById('printError');
+    if (status) status.textContent = message;
+    if (isError && error) {
+      error.style.display = 'block';
+      error.textContent = message;
+    }
+  } catch (_) {}
+}
+
 async function printFile(f, printWindow) {
-  showBusy('Preparing print, please wait...');
+  showBusy('Getting file from Google Drive...');
+  updatePrintWindow(printWindow, 'Getting file from Google Drive…');
   try {
     const res = await runServer('getPrintData', f.id);
+    if (!res || !res.data) throw new Error('The server returned an empty file. Check the Google Drive file and Apps Script response.');
+
     let pages;
     if (res.mime === 'application/pdf') {
       pages = await pdfPagesToImages(res.data, (n, total) => {
-        $('busyText').textContent = 'Preparing page ' + n + ' of ' + total + '...';
+        const message = 'Rendering PDF page ' + n + ' of ' + total + '…';
+        $('busyText').textContent = message;
+        updatePrintWindow(printWindow, message);
       });
     } else {
-      pages = [{ src: 'data:' + res.mime + ';base64,' + res.data }];
+      pages = [{ src: 'data:' + (res.mime || 'image/jpeg') + ';base64,' + res.data }];
     }
     await printPages(pages, f.name, printWindow);
   } catch (e) {
     hideBusy();
-    try { if (printWindow && !printWindow.closed) printWindow.close(); } catch (_) {}
-    setStatus('Print failed: ' + e.message);
+    const message = 'Print preparation failed: ' + (e && e.message ? e.message : String(e));
+    setStatus(message);
+    updatePrintWindow(printWindow, message, true);
+    try {
+      const btn = printWindow && printWindow.document.getElementById('printNow');
+      if (btn) { btn.disabled = true; btn.textContent = 'Not ready'; }
+      const hint = printWindow && printWindow.document.getElementById('printHint');
+      if (hint) hint.textContent = 'Close this tab and try again.';
+    } catch (_) {}
   }
 }
 
-// Render the pages in the separate print window, not inside the Google Sites iframe.
 async function printPages(pages, fileName, printWindow) {
   if (!printWindow || printWindow.closed) {
-    throw new Error('The print window was closed. Please try again.');
+    throw new Error('The print tab was closed before the document finished loading.');
   }
+  if (!pages || !pages.length) throw new Error('No printable pages were created.');
 
-  await measurePages(pages);
-
+  updatePrintWindow(printWindow, 'Loading ' + pages.length + ' page(s)…');
   const doc = printWindow.document;
   doc.title = fileName || 'Print document';
-  const body = doc.body;
-  body.innerHTML = '';
+  const pagesHost = doc.getElementById('printPages');
+  if (!pagesHost) throw new Error('Print tab could not be initialized.');
 
-  const style = doc.createElement('style');
-  style.textContent =
-    '@page{margin:0}' +
-    'html,body{margin:0;padding:0;background:#fff}' +
-    '.sheet{width:100%;height:100vh;display:flex;align-items:center;justify-content:center;' +
-    'overflow:hidden;break-after:page;page-break-after:always}' +
-    '.sheet:last-child{break-after:auto;page-break-after:auto}' +
-    '.sheet img{max-width:100%;max-height:100%;width:auto;height:auto;display:block;object-fit:contain}' +
-    '@media print{.sheet{height:100vh;width:100vw}}';
-  doc.head.appendChild(style);
-
+  pagesHost.innerHTML = '';
   const imageLoads = [];
-  pages.forEach(p => {
+
+  pages.forEach((p, index) => {
     const sheet = doc.createElement('section');
     sheet.className = 'sheet';
     const img = doc.createElement('img');
-    img.alt = fileName || 'Document page';
+    img.alt = (fileName || 'Document') + ' — page ' + (index + 1);
     img.src = p.src;
-    imageLoads.push(new Promise(resolve => {
-      if (img.complete && img.naturalWidth > 0) resolve();
-      else {
+    imageLoads.push(new Promise((resolve, reject) => {
+      if (img.complete) {
+        if (img.naturalWidth > 0) resolve();
+        else reject(new Error('Page ' + (index + 1) + ' image could not be loaded.'));
+      } else {
         img.onload = resolve;
-        img.onerror = resolve;
+        img.onerror = () => reject(new Error('Page ' + (index + 1) + ' image could not be loaded.'));
       }
     }));
     sheet.appendChild(img);
-    body.appendChild(sheet);
+    pagesHost.appendChild(sheet);
   });
 
   await Promise.all(imageLoads);
-  hideBusy();
+  if (printWindow.closed) throw new Error('The print tab was closed.');
 
-  // Printing is initiated in the separate top-level window. Keep it open
-  // so the user can review the print preview and choose a printer or PDF.
-  printWindow.focus();
-  setTimeout(() => {
-    try {
-      if (!printWindow.closed) {
-        printWindow.print();
-        setStatus('Print preview opened in a new tab');
-      }
-    } catch (e) {
-      setStatus('Could not open print preview: ' + e.message);
-    }
-  }, 500);
+  const status = doc.getElementById('printStatus');
+  if (status) status.textContent = 'Document ready — ' + pages.length + ' page(s).';
+  const btn = doc.getElementById('printNow');
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = 'Print Now';
+  }
+  const hint = doc.getElementById('printHint');
+  if (hint) hint.textContent = 'Review the pages, then click Print Now.';
+  hideBusy();
+  setStatus('Document ready in the new tab. Click Print Now there.');
 }
 
 // Shows the viewer right away with a loading message, before the file arrives
