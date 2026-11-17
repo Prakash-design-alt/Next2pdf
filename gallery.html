@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,460 +7,414 @@
 
 <style>
 :root {
-  --bg:#f4f6fb;
-  --surface:#fff;
-  --surface-2:#f8fafc;
-  --border:#e5e9f2;
-  --text:#1e293b;
-  --muted:#64748b;
-  --primary:#2563eb;
-  --primary-dark:#1d4ed8;
-  --pdf:#dc2626;
-  --img:#0891b2;
-  --folder:#f59e0b;
-  --shadow:0 1px 2px rgba(15,23,42,.06),0 4px 14px rgba(15,23,42,.06);
-  --radius:14px;
+  --bg: #f4f6fb;
+  --surface: #fff;
+  --surface-2: #f8fafc;
+  --border: #e5e9f2;
+  --text: #1e293b;
+  --muted: #64748b;
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --pdf: #dc2626;
+  --img: #0891b2;
+  --folder: #f59e0b;
+  --shadow: 0 1px 2px rgba(15,23,42,.06), 0 4px 14px rgba(15,23,42,.06);
+  --radius: 14px;
 }
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
 }
-button,input{font:inherit}
-button{cursor:pointer}
-svg{display:block}
+button, input { font: inherit; }
+button { cursor: pointer; }
+svg { display: block; }
 
 /* Login */
-#loginView{
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
+#loginView {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
-.login-card{
-  width:100%;
-  max-width:380px;
-  background:var(--surface);
-  border-radius:18px;
-  box-shadow:var(--shadow);
-  padding:40px 32px;
-  text-align:center;
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 40px 32px;
+  text-align: center;
 }
-.logo-mark{
-  width:56px;
-  height:56px;
-  border-radius:16px;
-  margin:0 auto 18px;
-  background:linear-gradient(135deg,#2563eb,#7c3aed);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#fff;
+.logo-mark {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  margin: 0 auto 18px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
 }
-.login-card h1{font-size:22px;margin:0 0 6px}
-.login-card p{margin:0 0 26px;color:var(--muted);font-size:14px}
-.google-btn{
-  width:100%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-  padding:12px;
-  border:1px solid var(--border);
-  border-radius:10px;
-  background:#fff;
-  color:var(--text);
-  font-weight:600;
-  font-size:15px;
-  transition:background .15s,box-shadow .15s;
+.login-card h1 { font-size: 22px; margin: 0 0 6px; }
+.login-card p { margin: 0 0 26px; color: var(--muted); font-size: 14px; }
+.google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 15px;
+  transition: background .15s, box-shadow .15s;
 }
-.google-btn:hover{background:var(--surface-2);box-shadow:var(--shadow)}
-.login-err{color:#dc2626;font-size:13px;min-height:18px;margin-top:14px}
+.google-btn:hover { background: var(--surface-2); box-shadow: var(--shadow); }
+.login-err { color: #dc2626; font-size: 13px; min-height: 18px; margin-top: 14px; }
 
 /* App shell */
-#appView{display:none}
-.topbar{
-  position:sticky;
-  top:0;
-  z-index:20;
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-  padding:12px 24px;
-  display:flex;
-  align-items:center;
-  gap:16px;
+#appView { display: none; }
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
-.brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  font-weight:700;
-  white-space:nowrap;
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; white-space: nowrap; }
+.brand .logo-mark { width: 34px; height: 34px; border-radius: 10px; margin: 0; }
+.brand .logo-mark svg { width: 18px; height: 18px; }
+.search { flex: 1; max-width: 560px; position: relative; }
+.search svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
 }
-.brand .logo-mark{
-  width:34px;
-  height:34px;
-  border-radius:10px;
-  margin:0;
+.search input {
+  width: 100%;
+  padding: 10px 14px 10px 38px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  outline: none;
 }
-.brand .logo-mark svg{width:18px;height:18px}
-.search{flex:1;max-width:560px;position:relative}
-.search svg{
-  position:absolute;
-  left:12px;
-  top:50%;
-  transform:translateY(-50%);
-  color:var(--muted);
+.search input:focus {
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.15);
 }
-.search input{
-  width:100%;
-  padding:10px 14px 10px 38px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:var(--surface-2);
-  color:var(--text);
-  outline:none;
+.top-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.user-chip {
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.search input:focus{
-  border-color:var(--primary);
-  background:#fff;
-  box-shadow:0 0 0 3px rgba(37,99,235,.15);
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  transition: background .15s;
 }
-.top-actions{margin-left:auto;display:flex;align-items:center;gap:10px}
-.user-chip{
-  font-size:13px;
-  color:var(--muted);
-  max-width:200px;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-.btn{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:9px 14px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:var(--surface);
-  color:var(--text);
-  font-size:14px;
-  font-weight:500;
-  transition:background .15s;
-}
-.btn:hover:not(:disabled){background:var(--surface-2)}
-.btn:disabled{opacity:.45;cursor:default}
-.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
-.btn.primary:hover:not(:disabled){background:var(--primary-dark)}
-.btn svg{width:16px;height:16px}
+.btn:hover:not(:disabled) { background: var(--surface-2); }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn.primary:hover:not(:disabled) { background: var(--primary-dark); }
+.btn svg { width: 16px; height: 16px; }
 
 /* Toolbar */
-.toolbar{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:14px 24px 6px;
-  flex-wrap:wrap;
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px 6px;
+  flex-wrap: wrap;
 }
-.crumbs{display:flex;align-items:center;flex-wrap:wrap;gap:4px;font-size:14px}
-.crumb{
-  padding:6px 10px;
-  border-radius:8px;
-  background:transparent;
-  border:none;
-  color:var(--muted);
-  font-size:14px;
+.crumbs { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; font-size: 14px; }
+.crumb {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 14px;
 }
-.crumb:hover{background:#e9eefb;color:var(--primary-dark)}
-.crumb.current{color:var(--text);font-weight:600;cursor:default}
-.crumb.current:hover{background:transparent;color:var(--text)}
-.crumb-sep{color:#cbd5e1}
-.status{margin-left:auto;font-size:13px;color:var(--muted)}
+.crumb:hover { background: #e9eefb; color: var(--primary-dark); }
+.crumb.current { color: var(--text); font-weight: 600; cursor: default; }
+.crumb.current:hover { background: transparent; color: var(--text); }
+.crumb-sep { color: #cbd5e1; }
+.status { margin-left: auto; font-size: 13px; color: var(--muted); }
 
 /* Loading */
-.loader{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:14px;
-  padding:80px 20px;
-  color:var(--muted);
-  font-size:15px;
-  text-align:center;
+.loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 80px 20px;
+  color: var(--muted);
+  font-size: 15px;
+  text-align: center;
 }
-.spinner{
-  width:42px;
-  height:42px;
-  border-radius:50%;
-  border:4px solid #dbeafe;
-  border-top-color:var(--primary);
-  animation:spin .8s linear infinite;
+.spinner {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 4px solid #dbeafe;
+  border-top-color: var(--primary);
+  animation: spin .8s linear infinite;
 }
-@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* Busy overlay */
-#busy{
-  position:fixed;
-  inset:0;
-  z-index:100;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background:rgba(15,23,42,.55);
+#busy {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15,23,42,.55);
 }
-#busy.show{display:flex}
-.busy-card{
-  background:var(--surface);
-  border-radius:16px;
-  padding:28px 36px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:14px;
-  box-shadow:0 10px 40px rgba(0,0,0,.25);
-  font-size:15px;
-  color:var(--text);
+#busy.show { display: flex; }
+.busy-card {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 28px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.25);
+  font-size: 15px;
+  color: var(--text);
 }
 
 /* Content */
-.content{padding:12px 24px 40px}
-.section-title{
-  font-size:12px;
-  font-weight:600;
-  letter-spacing:.06em;
-  text-transform:uppercase;
-  color:var(--muted);
-  margin:18px 0 10px;
+.content { padding: 12px 24px 40px; }
+.section-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 18px 0 10px;
 }
-.grid{
-  display:grid;
-  gap:14px;
-  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+.grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
-.tile{
-  position:relative;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:16px;
-  cursor:pointer;
-  box-shadow:var(--shadow);
-  transition:transform .12s,box-shadow .12s,border-color .12s;
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-  min-height:130px;
+.tile {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform .12s, box-shadow .12s, border-color .12s;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 130px;
 }
-.tile:hover{
-  transform:translateY(-2px);
-  border-color:#c7d2fe;
-  box-shadow:0 8px 22px rgba(37,99,235,.12);
+.tile:hover {
+  transform: translateY(-2px);
+  border-color: #c7d2fe;
+  box-shadow: 0 8px 22px rgba(37,99,235,.12);
 }
-.tile-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-.badge{
-  width:44px;
-  height:44px;
-  border-radius:12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  flex-shrink:0;
+.tile-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
-.badge svg{width:22px;height:22px}
-.badge.folder{background:#fef3c7;color:var(--folder)}
-.badge.pdf{background:#fee2e2;color:var(--pdf)}
-.badge.img{background:#cffafe;color:var(--img)}
-.tile-name{
-  font-size:14px;
-  font-weight:600;
-  line-height:1.35;
-  word-break:break-word;
-  display:-webkit-box;
-  -webkit-line-clamp:2;
-  -webkit-box-orient:vertical;
-  overflow:hidden;
+.badge svg { width: 22px; height: 22px; }
+.badge.folder { background: #fef3c7; color: var(--folder); }
+.badge.pdf { background: #fee2e2; color: var(--pdf); }
+.badge.img { background: #cffafe; color: var(--img); }
+.tile-name {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
-.tile-meta{font-size:12px;color:var(--muted);margin-top:auto}
-.tile-actions{
-  position:absolute;
-  top:12px;
-  right:12px;
-  display:flex;
-  gap:6px;
-  opacity:0;
-  transition:opacity .15s;
+.tile-meta { font-size: 12px; color: var(--muted); margin-top: auto; }
+.tile-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity .15s;
 }
-.tile:hover .tile-actions,.tile-actions:focus-within{opacity:1}
-.icon-btn{
-  width:32px;
-  height:32px;
-  border-radius:8px;
-  border:1px solid var(--border);
-  background:var(--surface);
-  color:var(--muted);
-  display:flex;
-  align-items:center;
-  justify-content:center;
+.tile:hover .tile-actions, .tile-actions:focus-within { opacity: 1; }
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.icon-btn:hover{color:var(--primary);border-color:#bfdbfe}
-.icon-btn svg{width:16px;height:16px}
+.icon-btn:hover { color: var(--primary); border-color: #bfdbfe; }
+.icon-btn svg { width: 16px; height: 16px; }
 
 /* Search results */
-.result-list{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  overflow:hidden;
-  box-shadow:var(--shadow);
+.result-list {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
 }
-.result{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  padding:12px 16px;
-  cursor:pointer;
-  border-bottom:1px solid var(--border);
+.result {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
 }
-.result:last-child{border-bottom:none}
-.result:hover{background:var(--surface-2)}
-.result .badge{width:38px;height:38px;border-radius:10px}
-.result .badge svg{width:19px;height:19px}
-.result-main{flex:1;min-width:0}
-.result-name{
-  font-size:14px;
-  font-weight:600;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+.result:last-child { border-bottom: none; }
+.result:hover { background: var(--surface-2); }
+.result .badge { width: 38px; height: 38px; border-radius: 10px; }
+.result .badge svg { width: 19px; height: 19px; }
+.result-main { flex: 1; min-width: 0; }
+.result-name {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.result-path{
-  font-size:12px;
-  color:var(--muted);
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+.result-path {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.result-actions{display:flex;gap:6px;flex-shrink:0}
-.text-btn{
-  border:1px solid var(--border);
-  background:var(--surface);
-  color:var(--text);
-  padding:6px 12px;
-  border-radius:8px;
-  font-size:13px;
+.result-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.text-btn {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
 }
-.text-btn:hover{border-color:#bfdbfe;color:var(--primary)}
-.empty{
-  text-align:center;
-  padding:60px 20px;
-  color:var(--muted);
-  font-size:14px;
-  background:var(--surface);
-  border:1px dashed #cbd5e1;
-  border-radius:var(--radius);
+.text-btn:hover { border-color: #bfdbfe; color: var(--primary); }
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+  font-size: 14px;
+  background: var(--surface);
+  border: 1px dashed #cbd5e1;
+  border-radius: var(--radius);
 }
 
 /* Viewer */
-#viewer{
-  position:fixed;
-  inset:0;
-  background:rgba(15,23,42,.75);
-  z-index:50;
-  display:none;
-  flex-direction:column;
+#viewer {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,.75);
+  z-index: 50;
+  display: none;
+  flex-direction: column;
 }
-#viewer.show{display:flex}
-.viewer-bar{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:12px 20px;
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
+#viewer.show { display: flex; }
+.viewer-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
 }
-.viewer-title{
-  flex:1;
-  min-width:0;
-  font-weight:600;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+.viewer-title {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.viewer-body{flex:1;overflow:auto;padding:20px}
-.viewer-loading{display:none;color:#e2e8f0}
-.viewer-pages{
-  display:none;
-  flex-direction:column;
-  align-items:center;
-  gap:16px;
+.viewer-body { flex: 1; overflow: auto; padding: 20px; }
+.viewer-loading { display: none; color: #e2e8f0; }
+.viewer-pages {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
 }
-.viewer-pages canvas{
-  max-width:100%;
-  height:auto;
-  background:#fff;
-  border-radius:6px;
-  box-shadow:0 6px 24px rgba(0,0,0,.25);
+.viewer-pages canvas {
+  max-width: 100%;
+  height: auto;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.25);
 }
-.viewer-image{
-  height:100%;
-  display:none;
-  align-items:center;
-  justify-content:center;
+.viewer-image {
+  height: 100%;
+  display: none;
+  align-items: center;
+  justify-content: center;
 }
-.viewer-image img{
-  max-width:100%;
-  max-height:100%;
-  border-radius:6px;
-  box-shadow:0 6px 24px rgba(0,0,0,.25);
-}
-
-@media(max-width:720px){
-  .topbar{flex-wrap:wrap;padding:12px 16px}
-  .search{order:3;max-width:none;flex-basis:100%}
-  .user-chip{display:none}
-  .toolbar,.content{padding-left:16px;padding-right:16px}
-  .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
-  .tile-actions{opacity:1}
+.viewer-image img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 6px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.25);
 }
 
-/* Print area */
-#printFrame{
-  position:fixed;
-  left:0;
-  bottom:0;
-  width:1px;
-  height:1px;
-  border:0;
-  opacity:0;
-  pointer-events:none;
-}
-#printArea{display:none}
-
-@media print{
-  body>*:not(#printArea){display:none!important}
-  #printArea{display:block!important}
-  #printArea .sheet{
-    width:100vw;
-    height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    break-after:page;
-    page-break-after:always;
-  }
-  #printArea .sheet:last-child{break-after:auto;page-break-after:auto}
-  #printArea img{
-    max-width:100%;
-    max-height:100%;
-    width:auto;
-    height:auto;
-    display:block;
-  }
+@media (max-width: 720px) {
+  .topbar { flex-wrap: wrap; padding: 12px 16px; }
+  .search { order: 3; max-width: none; flex-basis: 100%; }
+  .user-chip { display: none; }
+  .toolbar, .content { padding-left: 16px; padding-right: 16px; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .tile-actions { opacity: 1; }
 }
 </style>
 </head>
@@ -472,9 +425,8 @@ svg{display:block}
 <div id="loginView">
   <div class="login-card">
     <div class="logo-mark">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-        stroke-linejoin="round">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
       </svg>
     </div>
@@ -588,16 +540,13 @@ svg{display:block}
   </div>
 </div>
 
-<!-- PRINT BUSY OVERLAY -->
+<!-- BUSY OVERLAY -->
 <div id="busy">
   <div class="busy-card">
     <div class="spinner"></div>
     <div id="busyText">Preparing print, please wait...</div>
   </div>
 </div>
-
-<div id="printArea"></div>
-<iframe id="printFrame" title="print"></iframe>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -620,9 +569,11 @@ firebase.initializeApp({
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbz3aKtS-j9NusJxNbyQkwXTybXluoqghw4uXTq1wp3mb3UcIEiKqw1g3IBSMvnL816KwQ/exec';
 
+const PDFJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+const PDFJS_WORKER_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
 if (window.pdfjsLib) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
 }
 
 const $ = id => document.getElementById(id);
@@ -640,36 +591,33 @@ let rootId = null;
 let started = false;
 let viewerFile = null;
 let busyTimer = null;
-
 const folderCache = new Map();
 
-function setStatus(t) {
-  $('status').textContent = t;
-}
-
-function current() {
-  return stack[stack.length - 1];
-}
-
+function setStatus(t) { $('status').textContent = t; }
+function current() { return stack[stack.length - 1]; }
 function esc(v) {
   return String(v == null ? '' : v)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 }
-
 function loaderHtml(message) {
-  return '<div class="loader"><div class="spinner"></div><div>' +
-    esc(message) + '</div></div>';
+  return '<div class="loader"><div class="spinner"></div><div>' + esc(message) + '</div></div>';
+}
+function base64ToBytes(b64) {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
 }
 
+// Busy overlay (used while the print tab is opened)
 function showBusy(message) {
   $('busyText').textContent = message;
   $('busy').classList.add('show');
   clearTimeout(busyTimer);
-  busyTimer = setTimeout(hideBusy, 20000);
+  busyTimer = setTimeout(hideBusy, 8000);
 }
-
 function hideBusy() {
   clearTimeout(busyTimer);
   $('busy').classList.remove('show');
@@ -681,57 +629,37 @@ function hideBusy() {
 
 async function runServer(fn, ...args) {
   const user = firebase.auth().currentUser;
-
-  if (!user) {
-    throw new Error('Please sign in');
-  }
+  if (!user) throw new Error('Please sign in');
 
   const token = await user.getIdToken();
   const controller = new AbortController();
-
   const timeoutId = setTimeout(() => controller.abort(), 60000);
 
   let resp;
-
   try {
     resp = await fetch(API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
-      },
-      body: JSON.stringify({
-        fn: fn,
-        token: token,
-        args: args
-      }),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ fn: fn, token: token, args: args }),
       signal: controller.signal
     });
   } catch (err) {
     if (err && err.name === 'AbortError') {
-      throw new Error(
-        'The server took more than 60 seconds to return the file. Please try again or check the Apps Script deployment.'
-      );
+      throw new Error('The server took more than 60 seconds. Please try again.');
     }
     throw err;
   } finally {
     clearTimeout(timeoutId);
   }
 
-  const responseText = await resp.text();
+  const text = await resp.text();
   let data;
-
   try {
-    data = JSON.parse(responseText);
+    data = JSON.parse(text);
   } catch (e) {
-    throw new Error(
-      'Backend did not return data. Check the deployment is set to "Anyone".'
-    );
+    throw new Error('Backend did not return data. Check the deployment is set to "Anyone".');
   }
-
-  if (!data.ok) {
-    throw new Error(data.error || 'Server request failed.');
-  }
-
+  if (!data.ok) throw new Error(data.error || 'Server request failed.');
   return data.result;
 }
 
@@ -741,47 +669,27 @@ async function runServer(fn, ...args) {
 
 function friendlyError(e) {
   const c = e && e.code ? e.code : '';
-
-  if (c === 'auth/popup-blocked') {
-    return 'The sign-in window was blocked. Allow pop-ups for this page and try again.';
-  }
-
-  if (
-    c === 'auth/popup-closed-by-user' ||
-    c === 'auth/cancelled-popup-request'
-  ) {
-    return '';
-  }
-
-  if (c === 'auth/network-request-failed') {
-    return 'Network error. Check your connection.';
-  }
-
+  if (c === 'auth/popup-blocked') return 'The sign-in window was blocked. Allow pop-ups for this page and try again.';
+  if (c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request') return '';
+  if (c === 'auth/network-request-failed') return 'Network error. Check your connection.';
   return e && e.message ? e.message : 'Sign-in failed. Please try again.';
 }
 
 $('googleBtn').onclick = () => {
   $('loginErr').textContent = '';
-
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
-
   firebase.auth().signInWithPopup(provider)
-    .catch(e => {
-      $('loginErr').textContent = friendlyError(e);
-    });
+    .catch(e => { $('loginErr').textContent = friendlyError(e); });
 };
 
-$('logoutBtn').onclick = () => {
-  firebase.auth().signOut();
-};
+$('logoutBtn').onclick = () => firebase.auth().signOut();
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     $('loginView').style.display = 'none';
     $('appView').style.display = 'block';
     $('userChip').textContent = user.email || '';
-
     if (!started) {
       started = true;
       start();
@@ -789,11 +697,9 @@ firebase.auth().onAuthStateChanged(user => {
   } else {
     $('appView').style.display = 'none';
     $('loginView').style.display = 'flex';
-
     started = false;
     stack = [];
     folderCache.clear();
-
     $('content').innerHTML = '';
     $('crumbs').innerHTML = '';
     setStatus('');
@@ -802,17 +708,14 @@ firebase.auth().onAuthStateChanged(user => {
 
 async function start() {
   $('content').innerHTML = loaderHtml('Loading, please wait...');
-
   try {
     rootId = await runServer('getRootId');
     stack = [{ id: rootId, name: 'Home' }];
     loadCurrent();
   } catch (e) {
     $('content').innerHTML = '';
-
     if (String(e.message).indexOf('Access denied') !== -1) {
-      $('loginErr').textContent =
-        'This Google account is not allowed. Sign in with an approved account.';
+      $('loginErr').textContent = 'This Google account is not allowed. Sign in with an approved account.';
       firebase.auth().signOut();
     } else {
       setStatus('Error: ' + e.message);
@@ -827,7 +730,6 @@ async function start() {
 function renderCrumbs() {
   const el = $('crumbs');
   el.innerHTML = '';
-
   stack.forEach((f, i) => {
     if (i > 0) {
       const sep = document.createElement('span');
@@ -835,45 +737,29 @@ function renderCrumbs() {
       sep.textContent = '/';
       el.appendChild(sep);
     }
-
     const isLast = i === stack.length - 1;
     const b = document.createElement('button');
-
     b.className = 'crumb' + (isLast ? ' current' : '');
     b.textContent = f.name;
-
     if (!isLast) {
       b.onclick = () => {
         stack = stack.slice(0, i + 1);
         loadCurrent();
       };
     }
-
     el.appendChild(b);
   });
-
   $('backBtn').disabled = stack.length <= 1;
 }
 
-function goInto(folder) {
-  stack.push(folder);
-  loadCurrent();
-}
-
-function goBack() {
-  if (stack.length > 1) {
-    stack.pop();
-    loadCurrent();
-  }
-}
+function goInto(folder) { stack.push(folder); loadCurrent(); }
+function goBack() { if (stack.length > 1) { stack.pop(); loadCurrent(); } }
 
 function loadCurrent() {
   const id = current().id;
-
   renderCrumbs();
 
   const cached = folderCache.get(id);
-
   if (cached) {
     render(cached);
   } else {
@@ -884,15 +770,11 @@ function loadCurrent() {
   runServer('listFolder', id)
     .then(res => {
       folderCache.set(id, res);
-
-      if (current().id === id) {
-        render(res);
-      }
+      if (current().id === id) render(res);
     })
     .catch(e => {
       if (!cached) {
-        $('content').innerHTML =
-          '<div class="empty">Could not load this folder.</div>';
+        $('content').innerHTML = '<div class="empty">Could not load this folder.</div>';
         setStatus('Error: ' + e.message);
       }
     });
@@ -913,67 +795,46 @@ function render(res) {
   }
 
   if (res.folders.length) {
-    wrap.insertAdjacentHTML(
-      'beforeend',
-      '<div class="section-title">Folders (' + res.folders.length + ')</div>'
-    );
-
+    wrap.insertAdjacentHTML('beforeend',
+      '<div class="section-title">Folders (' + res.folders.length + ')</div>');
     const g = document.createElement('div');
     g.className = 'grid';
-
     res.folders.forEach(f => g.appendChild(folderTile(f)));
     wrap.appendChild(g);
   }
 
   if (res.files.length) {
-    wrap.insertAdjacentHTML(
-      'beforeend',
-      '<div class="section-title">Files (' + res.files.length + ')</div>'
-    );
-
+    wrap.insertAdjacentHTML('beforeend',
+      '<div class="section-title">Files (' + res.files.length + ')</div>');
     const g = document.createElement('div');
     g.className = 'grid';
-
     res.files.forEach(f => g.appendChild(fileTile(f)));
     wrap.appendChild(g);
   }
 
-  setStatus(
-    res.folders.length + ' folders, ' + res.files.length + ' files'
-  );
+  setStatus(res.folders.length + ' folders, ' + res.files.length + ' files');
 }
 
 function folderTile(f) {
   const el = document.createElement('div');
   el.className = 'tile';
-
   el.innerHTML =
-    '<div class="tile-top"><div class="badge folder">' +
-    ICONS.folder +
-    '</div></div>' +
+    '<div class="tile-top"><div class="badge folder">' + ICONS.folder + '</div></div>' +
     '<div class="tile-name">' + esc(f.name) + '</div>' +
     '<div class="tile-meta">Folder</div>';
-
   el.onclick = () => goInto({ id: f.id, name: f.name });
-
   return el;
 }
 
 function fileTile(f) {
   const isPdf = f.mime === 'application/pdf';
   const el = document.createElement('div');
-
   el.className = 'tile';
-
   el.innerHTML =
-    '<div class="tile-top"><div class="badge ' +
-    (isPdf ? 'pdf' : 'img') + '">' +
-    (isPdf ? ICONS.pdf : ICONS.img) +
-    '</div></div>' +
+    '<div class="tile-top"><div class="badge ' + (isPdf ? 'pdf' : 'img') + '">' +
+    (isPdf ? ICONS.pdf : ICONS.img) + '</div></div>' +
     '<div class="tile-name">' + esc(f.name) + '</div>' +
-    '<div class="tile-meta">' +
-    (isPdf ? 'PDF document' : 'Image') +
-    '</div>';
+    '<div class="tile-meta">' + (isPdf ? 'PDF document' : 'Image') + '</div>';
 
   const actions = document.createElement('div');
   actions.className = 'tile-actions';
@@ -982,42 +843,33 @@ function fileTile(f) {
   pr.className = 'icon-btn';
   pr.title = 'Print';
   pr.innerHTML = ICONS.print;
-  pr.onclick = e => {
-    e.stopPropagation();
-    startPrint(f);
-  };
+  pr.onclick = e => { e.stopPropagation(); startPrint(f); };
 
   const dl = document.createElement('button');
   dl.className = 'icon-btn';
   dl.title = 'Download';
   dl.innerHTML = ICONS.download;
-  dl.onclick = e => {
-    e.stopPropagation();
-    downloadFile(f);
-  };
+  dl.onclick = e => { e.stopPropagation(); downloadFile(f); };
 
   actions.appendChild(pr);
   actions.appendChild(dl);
   el.appendChild(actions);
 
   el.onclick = () => openItem(f);
-
   return el;
 }
 
 // ============================================================
-// SEARCH RESULTS
+// SEARCH
 // ============================================================
 
 function resultRow(r) {
   const isPdf = r.mime === 'application/pdf';
   const kind = r.isFolder ? 'folder' : (isPdf ? 'pdf' : 'img');
-
   const where = ['Home'].concat(r.where.map(p => p.name)).join(' / ');
 
   const el = document.createElement('div');
   el.className = 'result';
-
   el.innerHTML =
     '<div class="badge ' + kind + '">' +
     (r.isFolder ? ICONS.folder : (isPdf ? ICONS.pdf : ICONS.img)) +
@@ -1053,46 +905,31 @@ function resultRow(r) {
   }
 
   el.onclick = () => openResult(r);
-
   return el;
 }
 
 function doSearch() {
   const term = $('searchInput').value.trim();
-
-  if (!term) {
-    loadCurrent();
-    return;
-  }
+  if (!term) { loadCurrent(); return; }
 
   const wrap = $('content');
-
   wrap.innerHTML = loaderHtml('Searching, please wait...');
-
-  $('crumbs').innerHTML =
-    '<span class="crumb current">Search: ' + esc(term) + '</span>';
-
+  $('crumbs').innerHTML = '<span class="crumb current">Search: ' + esc(term) + '</span>';
   $('backBtn').disabled = true;
   setStatus('');
 
   runServer('searchItems', term)
     .then(res => {
       if (!res.length) {
-        wrap.innerHTML =
-          '<div class="empty">No matches for "' +
-          esc(term) + '".</div>';
+        wrap.innerHTML = '<div class="empty">No matches for "' + esc(term) + '".</div>';
         setStatus('');
         return;
       }
-
       wrap.innerHTML = '';
-
       const list = document.createElement('div');
       list.className = 'result-list';
-
       res.forEach(r => list.appendChild(resultRow(r)));
       wrap.appendChild(list);
-
       setStatus(res.length + ' matches');
     })
     .catch(e => {
@@ -1103,585 +940,308 @@ function doSearch() {
 
 function openResult(r) {
   $('searchInput').value = '';
-
   stack = [{ id: rootId, name: 'Home' }].concat(r.goto);
-
   loadCurrent();
-
-  if (!r.isFolder) {
-    openItem({ id: r.id, name: r.name, mime: r.mime });
-  }
+  if (!r.isFolder) openItem({ id: r.id, name: r.name, mime: r.mime });
 }
 
 // ============================================================
-// BASE64 CONVERSION
-// ============================================================
-
-function base64ToBytes(b64) {
-  const bin = atob(b64);
-  const bytes = new Uint8Array(bin.length);
-
-  for (let i = 0; i < bin.length; i++) {
-    bytes[i] = bin.charCodeAt(i);
-  }
-
-  return bytes;
-}
-
-// ============================================================
-// CONVERT EVERY PDF PAGE INTO AN IMAGE FOR PRINTING
-// ============================================================
-
-window.pdfPagesToImages = async function(base64, onProgress) {
-  const pdfjs = window.pdfjsLib;
-
-  if (!pdfjs) {
-    throw new Error('PDF.js is not loaded. Refresh the page and try again.');
-  }
-
-  if (!base64) {
-    throw new Error('PDF data is empty.');
-  }
-
-  const pdfBytes = base64ToBytes(base64);
-
-  let pdf;
-
-  try {
-    pdf = await pdfjs.getDocument({
-      data: pdfBytes
-    }).promise;
-  } catch (error) {
-    throw new Error('Could not open PDF: ' + error.message);
-  }
-
-  if (!pdf.numPages) {
-    throw new Error('The PDF contains no pages.');
-  }
-
-  const pages = [];
-
-  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-    if (typeof onProgress === 'function') {
-      onProgress(pageNumber, pdf.numPages);
-    }
-
-    const page = await pdf.getPage(pageNumber);
-
-    const originalViewport = page.getViewport({ scale: 1 });
-
-    const scale = Math.min(
-      2,
-      2400 / Math.max(
-        originalViewport.width,
-        originalViewport.height
-      )
-    );
-
-    const viewport = page.getViewport({ scale });
-
-    const canvas = document.createElement('canvas');
-
-    canvas.width = Math.ceil(viewport.width);
-    canvas.height = Math.ceil(viewport.height);
-
-    const context = canvas.getContext('2d', {
-      alpha: false
-    });
-
-    if (!context) {
-      throw new Error('Could not create the PDF page canvas.');
-    }
-
-    context.fillStyle = '#ffffff';
-    context.fillRect(0, 0, canvas.width, canvas.height);
-
-    await page.render({
-      canvasContext: context,
-      viewport: viewport
-    }).promise;
-
-    const imageData = canvas.toDataURL('image/jpeg', 0.92);
-
-    pages.push({
-      src: imageData
-    });
-
-    canvas.width = 0;
-    canvas.height = 0;
-
-    page.cleanup();
-  }
-
-  return pages;
-};
-
-// ============================================================
-// OPEN FILE
-// ============================================================
-
-function openItem(f) {
-  return f.mime === 'application/pdf'
-    ? openPdf(f)
-    : openImage(f);
-}
-
-// ============================================================
-// DOWNLOAD FILE
+// DOWNLOAD
 // ============================================================
 
 async function downloadFile(f) {
   setStatus('Preparing ' + f.name + '...');
-
   try {
     const res = await runServer('getImageData', f.id);
-
-    const url = URL.createObjectURL(
-      new Blob(
-        [base64ToBytes(res.data)],
-        { type: res.mime }
-      )
-    );
-
+    const url = URL.createObjectURL(new Blob([base64ToBytes(res.data)], { type: res.mime }));
     const a = document.createElement('a');
-
     a.href = url;
     a.download = f.name;
-
     document.body.appendChild(a);
     a.click();
     a.remove();
-
     setTimeout(() => URL.revokeObjectURL(url), 10000);
-
     setStatus('Downloaded ' + f.name);
-
   } catch (e) {
     setStatus('Download failed: ' + e.message);
   }
 }
 
 // ============================================================
-// OPEN SEPARATE PRINT WINDOW
+// PRINTING
+// The print tab downloads the file, renders the PDF pages itself,
+// and enables "Print Now" when ready. Nothing switches back to this tab.
 // ============================================================
 
-function startPrint(f) {
-  const printWindow = window.open('', '_blank');
+const PRINT_CSS = `
+  @page land { size: landscape; margin: 0; }
+  @page port { size: portrait; margin: 0; }
+  body { margin: 0; font-family: Arial, sans-serif; background: #f1f5f9; color: #1e293b; }
+  #bar { position: sticky; top: 0; z-index: 5; background: #fff; border-bottom: 1px solid #ddd;
+         padding: 12px 18px; display: flex; gap: 12px; align-items: center; }
+  #printNow { border: 0; border-radius: 8px; padding: 10px 18px; background: #2563eb; color: #fff;
+              font-size: 15px; font-weight: 600; cursor: pointer; }
+  #printNow:disabled { opacity: .5; cursor: wait; }
+  #printHint, #printStatus { font-size: 13px; color: #64748b; }
+  #printStatus { padding: 14px 18px; }
+  #printError { display: none; color: #b91c1c; padding: 14px 18px; white-space: pre-wrap; }
+  #printPages { padding: 18px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .sheet { width: 100%; display: flex; align-items: center; justify-content: center; background: #fff;
+           box-shadow: 0 2px 10px rgba(0,0,0,.12); }
+  .sheet img { max-width: 100%; max-height: 90vh; width: auto; height: auto; display: block; }
+  @media print {
+    #bar, #printStatus, #printError { display: none !important; }
+    body { background: #fff; }
+    #printPages { padding: 0; gap: 0; display: block; }
+    .sheet { box-shadow: none; width: 100vw; height: 100vh; break-after: page; page-break-after: always; }
+    .sheet.land { page: land; }
+    .sheet.port { page: port; }
+    .sheet:last-child { break-after: auto; page-break-after: auto; }
+    .sheet img { max-width: 100%; max-height: 100%; }
+  }
+`;
 
-  if (!printWindow) {
-    setStatus(
-      'Print window blocked. Allow pop-ups for Google Sites and try again.'
-    );
+// Runs INSIDE the print tab. It reads the job written into that tab (the JOB variable).
+async function printTabWorker() {
+  const btn = document.getElementById('printNow');
+  const statusEl = document.getElementById('printStatus');
+  const errEl = document.getElementById('printError');
+  const host = document.getElementById('printPages');
+
+  const say = t => { statusEl.textContent = t; };
+  const fail = m => {
+    say('Could not prepare the document.');
+    errEl.style.display = 'block';
+    errEl.textContent = m;
+    btn.textContent = 'Not ready';
+    document.getElementById('printHint').textContent = 'Close this tab and try again from the gallery.';
+  };
+
+  try {
+    // 1. Download the file from Apps Script
+    say('Downloading the file from Google Drive…');
+    const resp = await fetch(JOB.api, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ fn: 'getPrintData', token: JOB.token, args: [JOB.id] })
+    });
+    const data = JSON.parse(await resp.text());
+    if (!data.ok) throw new Error(data.error || 'Server request failed.');
+    const res = data.result;
+    if (!res || !res.data) throw new Error('The server returned an empty file.');
+
+    const pages = [];
+
+    if (res.mime === 'application/pdf') {
+      // 2. Render every PDF page in this tab
+      if (!window.pdfjsLib) throw new Error('The PDF library did not load. Check the internet connection.');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = JOB.worker;
+
+      const bin = atob(res.data);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+
+      const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+
+      for (let n = 1; n <= pdf.numPages; n++) {
+        say('Rendering page ' + n + ' of ' + pdf.numPages + '…');
+
+        const page = await pdf.getPage(n);
+        const base = page.getViewport({ scale: 1 });
+        const scale = Math.min(2, 2400 / Math.max(base.width, base.height));
+        const vp = page.getViewport({ scale: scale });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.ceil(vp.width);
+        canvas.height = Math.ceil(vp.height);
+
+        const ctx = canvas.getContext('2d', { alpha: false });
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        await page.render({ canvasContext: ctx, viewport: vp }).promise;
+
+        pages.push({
+          src: canvas.toDataURL('image/jpeg', 0.92),
+          land: base.width > base.height
+        });
+
+        canvas.width = 0;
+        canvas.height = 0;
+        page.cleanup();
+      }
+    } else {
+      // Photos: one sheet, orientation read from the image
+      const src = 'data:' + (res.mime || 'image/jpeg') + ';base64,' + res.data;
+      const land = await new Promise(resolve => {
+        const im = new Image();
+        im.onload = () => resolve(im.naturalWidth > im.naturalHeight);
+        im.onerror = () => resolve(false);
+        im.src = src;
+      });
+      pages.push({ src: src, land: land });
+    }
+
+    // 3. Place the pages in this tab and wait until every image is ready
+    say('Loading ' + pages.length + ' page(s)…');
+    host.innerHTML = '';
+    pages.forEach(p => {
+      const sheet = document.createElement('section');
+      sheet.className = 'sheet ' + (p.land ? 'land' : 'port');
+      const img = document.createElement('img');
+      img.src = p.src;
+      sheet.appendChild(img);
+      host.appendChild(sheet);
+    });
+
+    await Promise.all(Array.from(host.querySelectorAll('img')).map(img =>
+      img.complete ? null : new Promise(resolve => { img.onload = resolve; img.onerror = resolve; })
+    ));
+
+    // 4. Enable Print Now in this tab
+    say('Ready: ' + pages.length + ' page(s).');
+    document.getElementById('printHint').textContent = 'Review the pages, then click Print Now.';
+    btn.disabled = false;
+    btn.textContent = 'Print Now';
+    btn.onclick = () => window.print();
+
+  } catch (e) {
+    fail(e && e.message ? e.message : String(e));
+  }
+}
+
+// Builds the print tab page. The worker function is copied into it as text.
+function buildPrintDoc(job) {
+  return '<!doctype html><html><head><meta charset="utf-8"><title>Print</title>' +
+    '<style>' + PRINT_CSS + '</style></head><body>' +
+    '<div id="bar"><button id="printNow" disabled>Preparing…</button>' +
+    '<span id="printHint">Please wait while the file is loaded.</span></div>' +
+    '<div id="printStatus">Starting…</div>' +
+    '<div id="printError"></div>' +
+    '<main id="printPages"></main>' +
+    '<script src="' + PDFJS_URL + '"><\/script>' +
+    '<script>const JOB=' + JSON.stringify(job) + ';(' + printTabWorker.toString() + ')();<\/script>' +
+    '</body></html>';
+}
+
+// Called from the Print buttons. Opens the tab right away (so the browser allows it),
+// then writes the job and sign-in token into that tab.
+async function startPrint(f) {
+  const w = window.open('', '_blank');
+  if (!w) {
+    setStatus('Pop-up blocked. Allow pop-ups for this site, then click Print again.');
     return;
   }
 
-  printWindow.document.open();
+  w.document.write('<p style="font-family:sans-serif;padding:24px">Opening print preview…</p>');
 
-  printWindow.document.write(
-    '<!doctype html><html><head><meta charset="utf-8">' +
-    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
-    '<title>Preparing print...</title>' +
-
-    '<style>' +
-    'body{font-family:Arial,sans-serif;margin:0;background:#f1f5f9;color:#1e293b}' +
-    '#printStatus{padding:28px;text-align:center;font-size:16px}' +
-    '#printToolbar{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid #ddd;' +
-    'padding:12px 18px;display:flex;align-items:center;gap:12px}' +
-    '#printToolbar button{border:0;border-radius:8px;padding:10px 18px;background:#2563eb;color:#fff;' +
-    'font-size:15px;font-weight:600;cursor:pointer}' +
-    '#printToolbar button:disabled{opacity:.5;cursor:wait}' +
-    '#printHint{font-size:13px;color:#64748b}' +
-    '#printPages{padding:18px;display:flex;flex-direction:column;align-items:center;gap:18px}' +
-    '.sheet{width:100%;min-height:90vh;background:#fff;display:flex;align-items:center;' +
-    'justify-content:center;overflow:hidden;break-after:page;page-break-after:always}' +
-    '.sheet:last-child{break-after:auto;page-break-after:auto}' +
-    '.sheet img{max-width:100%;max-height:95vh;width:auto;height:auto;display:block;object-fit:contain}' +
-    '#printError{display:none;color:#b91c1c;padding:20px;text-align:center;white-space:pre-wrap}' +
-
-    '@media print{' +
-    '@page{margin:0}' +
-    'body{background:#fff}' +
-    '#printToolbar,#printStatus,#printError{display:none!important}' +
-    '#printPages{padding:0;gap:0}' +
-    '.sheet{width:100vw;height:100vh;min-height:0;margin:0;break-after:page;page-break-after:always}' +
-    '.sheet:last-child{break-after:auto;page-break-after:auto}' +
-    '.sheet img{max-width:100%;max-height:100%}' +
-    '}' +
-    '</style></head><body>' +
-
-    '<div id="printToolbar">' +
-    '<button id="printNow" disabled>Preparing…</button>' +
-    '<span id="printHint">Please wait while the document is loaded.</span>' +
-    '</div>' +
-
-    '<div id="printStatus">Preparing your document for printing…</div>' +
-    '<div id="printError"></div>' +
-    '<main id="printPages"></main>' +
-
-    '<script>' +
-    'document.getElementById("printNow").addEventListener("click",function(){' +
-    'window.focus();window.print();' +
-    '});' +
-    '<\/script>' +
-
-    '</body></html>'
-  );
-
-  printWindow.document.close();
-
-  printFile(f, printWindow);
-}
-
-// ============================================================
-// UPDATE PRINT WINDOW STATUS
-// ============================================================
-
-function updatePrintWindow(printWindow, message, isError) {
+  let token;
   try {
-    if (!printWindow || printWindow.closed) {
-      return;
-    }
-
-    const status = printWindow.document.getElementById('printStatus');
-    const error = printWindow.document.getElementById('printError');
-
-    if (status) {
-      status.textContent = message;
-    }
-
-    if (isError && error) {
-      error.style.display = 'block';
-      error.textContent = message;
-    }
-
-  } catch (_) {}
-}
-
-// ============================================================
-// PREPARE FILE FOR PRINTING
-// ============================================================
-
-
-async function printFile(f, printWindow) {
-  showBusy('Getting file from Google Drive...');
-  updatePrintWindow(printWindow, 'Getting file from Google Drive…');
-
-  try {
-    const res = await runServer('getPrintData', f.id);
-
-    if (!res || !res.data) {
-      throw new Error('The server returned an empty file.');
-    }
-
-    let pages;
-
-    if (res.mime === 'application/pdf') {
-
-      if (typeof window.pdfPagesToImages !== 'function') {
-        throw new Error('PDF printing function is missing. Refresh the page.');
-      }
-
-      pages = await window.pdfPagesToImages(
-        res.data,
-        (n, total) => {
-          const message =
-            'Rendering PDF page ' + n + ' of ' + total + '…';
-
-          $('busyText').textContent = message;
-          updatePrintWindow(printWindow, message);
-        }
-      );
-
-    } else {
-      pages = [{
-        src: 'data:' + (res.mime || 'image/jpeg') + ';base64,' + res.data
-      }];
-    }
-
-    await printPages(pages, f.name, printWindow);
-
+    const user = firebase.auth().currentUser;
+    if (!user) throw new Error('Please sign in');
+    token = await user.getIdToken();
   } catch (e) {
-    hideBusy();
-
-    const message =
-      'Print preparation failed: ' +
-      (e && e.message ? e.message : String(e));
-
-    setStatus(message);
-    updatePrintWindow(printWindow, message, true);
-
-    try {
-      if (printWindow && !printWindow.closed) {
-        const btn = printWindow.document.getElementById('printNow');
-        if (btn) {
-          btn.disabled = true;
-          btn.textContent = 'Not ready';
-        }
-
-        const hint = printWindow.document.getElementById('printHint');
-        if (hint) {
-          hint.textContent = 'Close this tab and try again.';
-        }
-      }
-    } catch (_) {}
+    w.close();
+    setStatus('Print failed: ' + e.message);
+    return;
   }
+
+  const job = {
+    api: API_URL,
+    token: token,
+    id: f.id,
+    worker: PDFJS_WORKER_URL
+  };
+
+  w.document.open();
+  w.document.write(buildPrintDoc(job));
+  w.document.close();
+
+  setStatus('Print tab opened. Wait for "Print Now" to turn on, then click it there.');
 }
 
 // ============================================================
-// LOAD ALL PAGES INTO PRINT WINDOW
+// VIEWER
 // ============================================================
 
-async function printPages(pages, fileName, printWindow) {
-  if (!printWindow || printWindow.closed) {
-    throw new Error(
-      'The print tab was closed before the document finished loading.'
-    );
-  }
-
-  if (!pages || !pages.length) {
-    throw new Error('No printable pages were created.');
-  }
-
-  updatePrintWindow(
-    printWindow,
-    'Loading ' + pages.length + ' page(s)…'
-  );
-
-  const doc = printWindow.document;
-  doc.title = fileName || 'Print document';
-
-  const pagesHost = doc.getElementById('printPages');
-
-  if (!pagesHost) {
-    throw new Error('Print tab could not be initialized.');
-  }
-
-  pagesHost.innerHTML = '';
-
-  const imageLoads = [];
-
-  pages.forEach((p, index) => {
-    const sheet = doc.createElement('section');
-    sheet.className = 'sheet';
-
-    const img = doc.createElement('img');
-
-    img.alt =
-      (fileName || 'Document') +
-      ' — page ' +
-      (index + 1);
-
-    img.src = p.src;
-
-    imageLoads.push(
-      new Promise((resolve, reject) => {
-        if (img.complete) {
-          if (img.naturalWidth > 0) {
-            resolve();
-          } else {
-            reject(
-              new Error(
-                'Page ' + (index + 1) +
-                ' image could not be loaded.'
-              )
-            );
-          }
-        } else {
-          img.onload = resolve;
-
-          img.onerror = () => {
-            reject(
-              new Error(
-                'Page ' + (index + 1) +
-                ' image could not be loaded.'
-              )
-            );
-          };
-        }
-      })
-    );
-
-    sheet.appendChild(img);
-    pagesHost.appendChild(sheet);
-  });
-
-  await Promise.all(imageLoads);
-
-  if (printWindow.closed) {
-    throw new Error('The print tab was closed.');
-  }
-
-  const status = doc.getElementById('printStatus');
-
-  if (status) {
-    status.textContent =
-      'Document ready — ' + pages.length + ' page(s).';
-  }
-
-  const btn = doc.getElementById('printNow');
-
-  if (btn) {
-    btn.disabled = false;
-    btn.textContent = 'Print Now';
-  }
-
-  const hint = doc.getElementById('printHint');
-
-  if (hint) {
-    hint.textContent =
-      'Review the pages, then click Print Now.';
-  }
-
-  hideBusy();
-
-  setStatus(
-    'Document ready in the new tab. Click Print Now there.'
-  );
+function openItem(f) {
+  return f.mime === 'application/pdf' ? openPdf(f) : openImage(f);
 }
-
-// ============================================================
-// PDF AND IMAGE VIEWER
-// ============================================================
 
 function openViewerLoading(title) {
   $('viewerTitle').textContent = title;
-
   $('viewerLoading').style.display = 'flex';
   $('viewerPages').style.display = 'none';
   $('viewerImage').style.display = 'none';
-
   $('viewer').classList.add('show');
 }
 
 function showViewer(title, mode) {
   $('viewerTitle').textContent = title;
-
   $('viewerLoading').style.display = 'none';
-
-  $('viewerPages').style.display =
-    mode === 'pdf' ? 'flex' : 'none';
-
-  $('viewerImage').style.display =
-    mode === 'image' ? 'flex' : 'none';
-
+  $('viewerPages').style.display = mode === 'pdf' ? 'flex' : 'none';
+  $('viewerImage').style.display = mode === 'image' ? 'flex' : 'none';
   $('viewer').classList.add('show');
 }
 
 function closeViewerOnError(f, e) {
   $('viewer').classList.remove('show');
-
-  setStatus(
-    'Could not open ' + f.name + ': ' + e.message
-  );
+  setStatus('Could not open ' + f.name + ': ' + e.message);
 }
-
-// ============================================================
-// OPEN PDF
-// ============================================================
 
 async function openPdf(f) {
   const prev = $('status').textContent;
-
   viewerFile = f;
-
   openViewerLoading(f.name);
   setStatus('');
-
   try {
-    if (!window.pdfjsLib) {
-      throw new Error('PDF viewer library did not load');
-    }
+    if (!window.pdfjsLib) throw new Error('PDF viewer library did not load');
 
     const res = await runServer('getViewData', f.id);
+    const pdf = await pdfjsLib.getDocument({ data: base64ToBytes(res.data) }).promise;
 
-    const pdf = await pdfjsLib.getDocument({
-      data: base64ToBytes(res.data)
-    }).promise;
-
-    showViewer(
-      f.name + ' (' + pdf.numPages + ' pages)',
-      'pdf'
-    );
-
+    showViewer(f.name + ' (' + pdf.numPages + ' pages)', 'pdf');
     const pages = $('viewerPages');
     pages.innerHTML = '';
 
-    const width = Math.min(
-      window.innerWidth * 0.9,
-      900
-    );
-
+    const width = Math.min(window.innerWidth * 0.9, 900);
     for (let n = 1; n <= pdf.numPages; n++) {
       const page = await pdf.getPage(n);
-
       const base = page.getViewport({ scale: 1 });
-
-      const scale =
-        (width / base.width) *
-        (window.devicePixelRatio > 1 ? 1.5 : 1);
-
-      const viewport = page.getViewport({
-        scale: scale
-      });
-
+      const scale = (width / base.width) * (window.devicePixelRatio > 1 ? 1.5 : 1);
+      const viewport = page.getViewport({ scale: scale });
       const canvas = document.createElement('canvas');
-
       canvas.width = viewport.width;
       canvas.height = viewport.height;
-
       pages.appendChild(canvas);
-
-      await page.render({
-        canvasContext: canvas.getContext('2d'),
-        viewport: viewport
-      }).promise;
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
     }
-
     setStatus(prev);
-
   } catch (e) {
     closeViewerOnError(f, e);
   }
 }
-
-// ============================================================
-// OPEN IMAGE
-// ============================================================
 
 async function openImage(f) {
   const prev = $('status').textContent;
-
   viewerFile = f;
-
   openViewerLoading(f.name);
   setStatus('');
-
   try {
     const res = await runServer('getViewData', f.id);
-
     showViewer(f.name, 'image');
-
-    $('viewerImg').src =
-      'data:' + res.mime + ';base64,' + res.data;
-
+    $('viewerImg').src = 'data:' + res.mime + ';base64,' + res.data;
     setStatus(prev);
-
   } catch (e) {
     closeViewerOnError(f, e);
   }
 }
 
-// ============================================================
-// CLOSE VIEWER
-// ============================================================
-
 function closeViewer() {
   $('viewer').classList.remove('show');
-
   $('viewerLoading').style.display = 'none';
   $('viewerPages').innerHTML = '';
   $('viewerImg').src = '';
-
   viewerFile = null;
 }
 
@@ -1693,36 +1253,15 @@ $('backBtn').onclick = goBack;
 $('reloadBtn').onclick = loadCurrent;
 $('closeBtn').onclick = closeViewer;
 
-$('viewerDownloadBtn').onclick = () => {
-  if (viewerFile) {
-    downloadFile(viewerFile);
-  }
-};
-
-$('viewerPrintBtn').onclick = () => {
-  if (viewerFile) {
-    startPrint(viewerFile);
-  }
-};
+$('viewerDownloadBtn').onclick = () => { if (viewerFile) downloadFile(viewerFile); };
+$('viewerPrintBtn').onclick = () => { if (viewerFile) startPrint(viewerFile); };
 
 $('viewer').addEventListener('click', e => {
-  if (e.target.classList.contains('viewer-body')) {
-    closeViewer();
-  }
+  if (e.target.classList.contains('viewer-body')) closeViewer();
 });
 
-$('searchInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    doSearch();
-  }
-});
-
-$('searchInput').addEventListener('input', e => {
-  if (!e.target.value) {
-    loadCurrent();
-  }
-});
-
+$('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+$('searchInput').addEventListener('input', e => { if (!e.target.value) loadCurrent(); });
 </script>
 </body>
 </html>
