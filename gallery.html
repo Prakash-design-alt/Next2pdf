@@ -680,7 +680,7 @@ async function downloadFile(f) {
 async function printFile(f) {
   showBusy('Preparing print, please wait...');
   try {
-    const res = await runServer('getImageData', f.id);
+    const res = await runServer('getPrintData', f.id);
     let pages;
     if (res.mime === 'application/pdf') {
       pages = await pdfPagesToImages(res.data);
