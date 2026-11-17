@@ -676,28 +676,20 @@ async function downloadFile(f) {
 }
 
 async function printFile(f) {
-  const win = window.open('', '_blank');
-  if (!win) {
-    setStatus('Pop-up blocked. Allow pop-ups for this site, then click Print again.');
-    return;
-  }
-  win.document.write('<p style="font-family:sans-serif;padding:20px">Preparing print, please wait...</p>');
   showBusy('Preparing print, please wait...');
   try {
     const res = await runServer('getPrintData', f.id);
     let pages;
     if (res.mime === 'application/pdf') {
       pages = await pdfPagesToImages(res.data, (n, total) => {
-        win.document.body.innerHTML =
-          '<p style="font-family:sans-serif;padding:20px">Preparing page ' + n + ' of ' + total + '...</p>';
+        $('busyText').textContent = 'Preparing page ' + n + ' of ' + total + '...';
       });
     } else {
-      pages = [{ src: 'data:' + res.mime + ';base64,' + res.data, land: null }];
+      pages = [{ src: 'data:' + res.mime + ';base64,' + res.data }];
     }
-    await printPages(pages, win);
+    await printPages(pages);
   } catch (e) {
     hideBusy();
-    win.close();
     setStatus('Print failed: ' + e.message);
   }
 }
@@ -734,15 +726,14 @@ function measurePages(pages) {
   })));
 }
 
-// Writes the sheets into the new tab, waits for the images, then opens the print dialog
-async function printPages(pages, win) {
+async function printPages(pages) {
   await measurePages(pages);
 
   const sheets = pages.map(p =>
     '<div class="sheet ' + (p.land ? 'land' : 'port') + '"><img src="' + p.src + '"></div>'
   ).join('');
 
-  const doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Print</title><style>' +
+  const doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><style>' +
     '@page land { size: landscape; margin: 0; }' +
     '@page port { size: portrait; margin: 0; }' +
     'html, body { margin: 0; padding: 0; background: #fff; }' +
@@ -754,20 +745,27 @@ async function printPages(pages, win) {
     '.sheet img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; display: block; }' +
     '</style></head><body>' + sheets + '</body></html>';
 
-  win.document.open();
-  win.document.write(doc);
-  win.document.close();
+  const frame = $('printFrame');
+  frame.onload = () => {
+    const w = frame.contentWindow;
+    const imgs = Array.from(w.document.images);
+    const ready = imgs.map(img => img.complete ? Promise.resolve() :
+      new Promise(resolve => { img.onload = resolve; img.onerror = resolve; }));
 
-  const imgs = Array.from(win.document.images);
-  await Promise.all(imgs.map(img => img.complete ? null :
-    new Promise(resolve => { img.onload = resolve; img.onerror = resolve; })));
-
-  hideBusy();
-  setTimeout(() => {
-    win.focus();
-    win.print();
-    setStatus('Print dialog opened');
-  }, 400);
+    Promise.all(ready).then(() => {
+      setTimeout(() => {
+        hideBusy();
+        try {
+          w.focus();
+          w.print();
+          setStatus('Print dialog opened');
+        } catch (e) {
+          setStatus('Print failed: ' + e.message);
+        }
+      }, 400);
+    });
+  };
+  frame.srcdoc = doc;
 }
 // Shows the viewer right away with a loading message, before the file arrives
 function openViewerLoading(title) {
