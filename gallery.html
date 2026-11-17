@@ -212,8 +212,12 @@
     .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
   }
 
-  /* Print frame: hidden, so only the chosen file is printed */
-  #printFrame { position: fixed; width: 0; height: 0; border: 0; visibility: hidden; }
+  /* Print frame: tiny and transparent (not hidden), so the browser prints it reliably.
+     It sits in a corner and is never seen by the user. */
+  #printFrame {
+    position: fixed; left: 0; bottom: 0; width: 1px; height: 1px;
+    border: 0; opacity: 0; pointer-events: none;
+  }
 </style>
 </head>
 <body>
@@ -672,38 +676,72 @@ async function downloadFile(f) {
   }
 }
 
-// Prints a PDF or image through a hidden frame, so only the chosen file is printed.
-// The busy overlay stays in front of the screen until the print dialog opens.
+// Printing: the file is turned into printable pages (images, or PDF pages rendered by pdf.js),
+// placed in the print frame, and the print dialog opens for that frame only.
 async function printFile(f) {
   showBusy('Preparing print, please wait...');
   try {
     const res = await runServer('getImageData', f.id);
-    const isPdf = res.mime === 'application/pdf';
-    const url = URL.createObjectURL(new Blob([base64ToBytes(res.data)], { type: res.mime }));
-    const frame = $('printFrame');
-
-    // Called when the file is ready inside the frame: hide the overlay, then open the print dialog
-    const startPrint = () => {
-      setTimeout(() => {
-        hideBusy();
-        try { frame.contentWindow.focus(); frame.contentWindow.print(); } catch (e) {}
-      }, 300);
-    };
-
-    if (isPdf) {
-      frame.onload = startPrint;
-      frame.src = url;
+    let bodyHtml;
+    if (res.mime === 'application/pdf') {
+      bodyHtml = await pdfPagesToImages(res.data);
     } else {
-      window.onPrintImageReady = startPrint;
-      frame.srcdoc = '<!DOCTYPE html><html><head><style>' +
-        '@page{margin:0}body{margin:0}img{width:100%;height:auto;display:block}' +
-        '</style></head><body><img src="' + url + '" onload="parent.onPrintImageReady()"></body></html>';
+      bodyHtml = '<img src="data:' + res.mime + ';base64,' + res.data + '">';
     }
-    setTimeout(() => URL.revokeObjectURL(url), 120000);
+    printHtml(bodyHtml);
   } catch (e) {
     hideBusy();
     setStatus('Print failed: ' + e.message);
   }
+}
+
+// Renders each PDF page to a high-quality image, so the PDF viewer is not needed for printing
+async function pdfPagesToImages(b64) {
+  if (!window.pdfjsLib) throw new Error('PDF viewer library did not load');
+  const pdf = await pdfjsLib.getDocument({ data: base64ToBytes(b64) }).promise;
+  let html = '';
+  for (let n = 1; n <= pdf.numPages; n++) {
+    const page = await pdf.getPage(n);
+    const viewport = page.getViewport({ scale: 2 });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
+    html += '<img src="' + canvas.toDataURL('image/jpeg', 0.92) + '">';
+  }
+  return html;
+}
+
+// Loads the pages into the print frame, waits for all images, then opens the print dialog
+function printHtml(bodyHtml) {
+  const frame = $('printFrame');
+  const doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><style>' +
+    '@page{margin:0}html,body{margin:0;padding:0}' +
+    'img{display:block;width:100%;height:auto;page-break-after:always;break-after:page}' +
+    'img:last-child{page-break-after:auto;break-after:auto}' +
+    '</style></head><body>' + bodyHtml + '</body></html>';
+
+  frame.onload = () => {
+    const w = frame.contentWindow;
+    const imgs = Array.from(w.document.images);
+    const ready = imgs.map(img => img.complete ? Promise.resolve() :
+      new Promise(resolve => { img.onload = resolve; img.onerror = resolve; }));
+
+    Promise.all(ready).then(() => {
+      setTimeout(() => {
+        hideBusy();
+        try {
+          w.focus();
+          w.print();
+          setStatus('Print dialog opened');
+        } catch (e) {
+          setStatus('Print failed: ' + e.message);
+        }
+      }, 400);
+    });
+  };
+
+  frame.srcdoc = doc;
 }
 
 // Shows the viewer right away with a loading message, before the file arrives
