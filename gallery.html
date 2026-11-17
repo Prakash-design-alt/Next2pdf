@@ -217,6 +217,14 @@
     position: fixed; left: 0; bottom: 0; width: 1px; height: 1px;
     border: 0; opacity: 0; pointer-events: none;
   }
+  /* Direct link button in the top bar */
+  .direct-link {
+    display: inline-flex; align-items: center; padding: 9px 14px;
+    border-radius: 10px; background: var(--primary); color: #fff;
+    font-size: 14px; font-weight: 600; text-decoration: none; white-space: nowrap;
+  }
+  .direct-link:hover { background: var(--primary-dark); }
+  
 </style>
 </head>
 <body>
@@ -255,6 +263,7 @@
       <input id="searchInput" type="search" placeholder="Search folders and files">
     </div>
     <div class="top-actions">
+      <a class="direct-link" href="https://prakash-design-alt.github.io/Next2pdf/gallery.html" target="_blank" rel="noopener">Print directly - click here</a>
       <span id="userChip" class="user-chip"></span>
       <button id="logoutBtn" class="btn">Sign out</button>
     </div>
