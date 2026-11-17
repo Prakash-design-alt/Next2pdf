@@ -571,7 +571,7 @@ function fileTile(f) {
   pr.className = 'icon-btn';
   pr.title = 'Print';
   pr.innerHTML = ICONS.print;
-  pr.onclick = e => { e.stopPropagation(); printFile(f); };
+  pr.onclick = e => { e.stopPropagation(); startPrint(f); };
 
   const dl = document.createElement('button');
   dl.className = 'icon-btn';
@@ -605,7 +605,7 @@ function resultRow(r) {
     const pb = document.createElement('button');
     pb.className = 'text-btn';
     pb.textContent = 'Print';
-    pb.onclick = e => { e.stopPropagation(); printFile({ id: r.id, name: r.name, mime: r.mime }); };
+    pb.onclick = e => { e.stopPropagation(); startPrint({ id: r.id, name: r.name, mime: r.mime }); };
 
     const db = document.createElement('button');
     db.className = 'text-btn';
@@ -688,7 +688,33 @@ async function downloadFile(f) {
   }
 }
 
-async function printFile(f) {
+// Open the print window directly inside the user's click event.
+// This is important because Google Sites embeds this page in an iframe,
+// and browsers may block window.print() when it is called after async work.
+function startPrint(f) {
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) {
+    setStatus('Print window was blocked. Allow pop-ups for this Google Sites page, then try again.');
+    return;
+  }
+  printWindow.document.open();
+  printWindow.document.write(
+    '<!doctype html><html><head><meta charset="utf-8">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<title>Preparing print...</title>' +
+    '<style>body{font-family:Arial,sans-serif;margin:20px;color:#333}' +
+    '.msg{text-align:center;margin:40px auto}img{display:block;max-width:100%;max-height:100%;object-fit:contain}' +
+    '.sheet{height:100vh;width:100%;display:flex;align-items:center;justify-content:center;' +
+    'break-after:page;page-break-after:always;overflow:hidden}' +
+    '.sheet:last-child{break-after:auto;page-break-after:auto}' +
+    '@media print{body{margin:0}.sheet{height:100vh;width:100vw}}' +
+    '</style></head><body><div class="msg">Preparing your document for printing...</div></body></html>'
+  );
+  printWindow.document.close();
+  printFile(f, printWindow);
+}
+
+async function printFile(f, printWindow) {
   showBusy('Preparing print, please wait...');
   try {
     const res = await runServer('getPrintData', f.id);
@@ -700,80 +726,74 @@ async function printFile(f) {
     } else {
       pages = [{ src: 'data:' + res.mime + ';base64,' + res.data }];
     }
-    await printPages(pages);
+    await printPages(pages, f.name, printWindow);
   } catch (e) {
     hideBusy();
+    try { if (printWindow && !printWindow.closed) printWindow.close(); } catch (_) {}
     setStatus('Print failed: ' + e.message);
   }
 }
 
-// Renders each PDF page at 2x as a high-quality JPEG (faster than PNG at 3x, still sharp on paper).
-// Also records each page's orientation from its size, so no extra measuring is needed.
-async function pdfPagesToImages(b64, onProgress) {
-  if (!window.pdfjsLib) throw new Error('PDF viewer library did not load');
-  const pdf = await pdfjsLib.getDocument({ data: base64ToBytes(b64) }).promise;
-  const pages = [];
-  for (let n = 1; n <= pdf.numPages; n++) {
-    if (onProgress) onProgress(n, pdf.numPages);
-    const page = await pdf.getPage(n);
-    const viewport = page.getViewport({ scale: 2 });
-    const canvas = document.createElement('canvas');
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
-    pages.push({
-      src: canvas.toDataURL('image/jpeg', 0.92),
-      land: viewport.width > viewport.height
-    });
+// Render the pages in the separate print window, not inside the Google Sites iframe.
+async function printPages(pages, fileName, printWindow) {
+  if (!printWindow || printWindow.closed) {
+    throw new Error('The print window was closed. Please try again.');
   }
-  return pages;
-}
-  
-// Reads each image's size first, so every sheet knows if it is landscape or portrait
-function measurePages(pages) {
-  return Promise.all(pages.map(p => new Promise(resolve => {
-    const im = new Image();
-    im.onload = () => { p.land = im.naturalWidth > im.naturalHeight; resolve(); };
-    im.onerror = () => { p.land = false; resolve(); };
-    im.src = p.src;
-  })));
-}
 
-async function printPages(pages) {
   await measurePages(pages);
 
-  // Build the sheets on the main page (hidden on screen, shown only when printing)
-  $('printArea').innerHTML = pages.map(p =>
-    '<div class="sheet ' + (p.land ? 'land' : 'port') + '"><img src="' + p.src + '"></div>'
-  ).join('');
+  const doc = printWindow.document;
+  doc.title = fileName || 'Print document';
+  const body = doc.body;
+  body.innerHTML = '';
 
-  // Page size for each sheet: landscape or portrait
-  let styleEl = $('printPageStyle');
-  if (!styleEl) {
-    styleEl = document.createElement('style');
-    styleEl.id = 'printPageStyle';
-    document.head.appendChild(styleEl);
-  }
-  styleEl.textContent =
-    '@page land { size: landscape; margin: 0; }' +
-    '@page port { size: portrait; margin: 0; }' +
-    '.sheet.land { page: land; } .sheet.port { page: port; }';
+  const style = doc.createElement('style');
+  style.textContent =
+    '@page{margin:0}' +
+    'html,body{margin:0;padding:0;background:#fff}' +
+    '.sheet{width:100%;height:100vh;display:flex;align-items:center;justify-content:center;' +
+    'overflow:hidden;break-after:page;page-break-after:always}' +
+    '.sheet:last-child{break-after:auto;page-break-after:auto}' +
+    '.sheet img{max-width:100%;max-height:100%;width:auto;height:auto;display:block;object-fit:contain}' +
+    '@media print{.sheet{height:100vh;width:100vw}}';
+  doc.head.appendChild(style);
 
-  // Wait for every image to finish loading before opening the print dialog
-  const imgs = Array.from($('printArea').querySelectorAll('img'));
-  await Promise.all(imgs.map(img => img.complete ? null :
-    new Promise(resolve => { img.onload = resolve; img.onerror = resolve; })));
+  const imageLoads = [];
+  pages.forEach(p => {
+    const sheet = doc.createElement('section');
+    sheet.className = 'sheet';
+    const img = doc.createElement('img');
+    img.alt = fileName || 'Document page';
+    img.src = p.src;
+    imageLoads.push(new Promise(resolve => {
+      if (img.complete && img.naturalWidth > 0) resolve();
+      else {
+        img.onload = resolve;
+        img.onerror = resolve;
+      }
+    }));
+    sheet.appendChild(img);
+    body.appendChild(sheet);
+  });
 
+  await Promise.all(imageLoads);
   hideBusy();
+
+  // Printing is initiated in the separate top-level window. Keep it open
+  // so the user can review the print preview and choose a printer or PDF.
+  printWindow.focus();
   setTimeout(() => {
     try {
-      window.print();
-      setStatus('Print dialog opened');
+      if (!printWindow.closed) {
+        printWindow.print();
+        setStatus('Print preview opened in a new tab');
+      }
     } catch (e) {
-      setStatus('Print failed: ' + e.message);
+      setStatus('Could not open print preview: ' + e.message);
     }
-  }, 300);
+  }, 500);
 }
+
 // Shows the viewer right away with a loading message, before the file arrives
 function openViewerLoading(title) {
   $('viewerTitle').textContent = title;
@@ -858,7 +878,7 @@ $('backBtn').onclick = goBack;
 $('reloadBtn').onclick = loadCurrent;
 $('closeBtn').onclick = closeViewer;
 $('viewerDownloadBtn').onclick = () => { if (viewerFile) downloadFile(viewerFile); };
-$('viewerPrintBtn').onclick = () => { if (viewerFile) printFile(viewerFile); };
+$('viewerPrintBtn').onclick = () => { if (viewerFile) startPrint(viewerFile); };
 $('viewer').addEventListener('click', e => { if (e.target.classList.contains('viewer-body')) closeViewer(); });
 $('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
 $('searchInput').addEventListener('input', e => { if (!e.target.value) loadCurrent(); });
