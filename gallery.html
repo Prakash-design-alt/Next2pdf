@@ -1361,28 +1361,26 @@ function updatePrintWindow(printWindow, message, isError) {
 // PREPARE FILE FOR PRINTING
 // ============================================================
 
+
 async function printFile(f, printWindow) {
   showBusy('Getting file from Google Drive...');
-
-  updatePrintWindow(
-    printWindow,
-    'Getting file from Google Drive…'
-  );
+  updatePrintWindow(printWindow, 'Getting file from Google Drive…');
 
   try {
     const res = await runServer('getPrintData', f.id);
 
     if (!res || !res.data) {
-      throw new Error(
-        'The server returned an empty file. Check the Google Drive file and Apps Script response.'
-      );
+      throw new Error('The server returned an empty file.');
     }
 
     let pages;
 
     if (res.mime === 'application/pdf') {
 
-      // CORRECTED PDF PRINTING FUNCTION CALL
+      if (typeof window.pdfPagesToImages !== 'function') {
+        throw new Error('PDF printing function is missing. Refresh the page.');
+      }
+
       pages = await window.pdfPagesToImages(
         res.data,
         (n, total) => {
@@ -1390,23 +1388,14 @@ async function printFile(f, printWindow) {
             'Rendering PDF page ' + n + ' of ' + total + '…';
 
           $('busyText').textContent = message;
-
-          updatePrintWindow(
-            printWindow,
-            message
-          );
+          updatePrintWindow(printWindow, message);
         }
       );
 
     } else {
-
       pages = [{
-        src: 'data:' +
-          (res.mime || 'image/jpeg') +
-          ';base64,' +
-          res.data
+        src: 'data:' + (res.mime || 'image/jpeg') + ';base64,' + res.data
       }];
-
     }
 
     await printPages(pages, f.name, printWindow);
@@ -1419,29 +1408,21 @@ async function printFile(f, printWindow) {
       (e && e.message ? e.message : String(e));
 
     setStatus(message);
-
-    updatePrintWindow(
-      printWindow,
-      message,
-      true
-    );
+    updatePrintWindow(printWindow, message, true);
 
     try {
-      const btn = printWindow &&
-        printWindow.document.getElementById('printNow');
+      if (printWindow && !printWindow.closed) {
+        const btn = printWindow.document.getElementById('printNow');
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = 'Not ready';
+        }
 
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = 'Not ready';
+        const hint = printWindow.document.getElementById('printHint');
+        if (hint) {
+          hint.textContent = 'Close this tab and try again.';
+        }
       }
-
-      const hint = printWindow &&
-        printWindow.document.getElementById('printHint');
-
-      if (hint) {
-        hint.textContent = 'Close this tab and try again.';
-      }
-
     } catch (_) {}
   }
 }
