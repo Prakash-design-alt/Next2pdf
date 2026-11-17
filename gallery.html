@@ -217,6 +217,19 @@
     position: fixed; left: 0; bottom: 0; width: 1px; height: 1px;
     border: 0; opacity: 0; pointer-events: none;
   }
+    /* Print layout: hidden on screen, shown only when printing */
+  #printArea { display: none; }
+  @media print {
+    body > *:not(#printArea) { display: none !important; }
+    #printArea { display: block !important; }
+    #printArea .sheet {
+      width: 100vw; height: 100vh; display: flex;
+      align-items: center; justify-content: center;
+      break-after: page; page-break-after: always;
+    }
+    #printArea .sheet:last-child { break-after: auto; page-break-after: auto; }
+    #printArea img { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; }
+  }
 </style>
 </head>
 <body>
@@ -309,7 +322,7 @@
     <div id="busyText">Preparing print, please wait...</div>
   </div>
 </div>
-
+<div id="printArea"></div>
 <iframe id="printFrame" title="print"></iframe>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -729,43 +742,37 @@ function measurePages(pages) {
 async function printPages(pages) {
   await measurePages(pages);
 
-  const sheets = pages.map(p =>
+  // Build the sheets on the main page (hidden on screen, shown only when printing)
+  $('printArea').innerHTML = pages.map(p =>
     '<div class="sheet ' + (p.land ? 'land' : 'port') + '"><img src="' + p.src + '"></div>'
   ).join('');
 
-  const doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><style>' +
+  // Page size for each sheet: landscape or portrait
+  let styleEl = $('printPageStyle');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'printPageStyle';
+    document.head.appendChild(styleEl);
+  }
+  styleEl.textContent =
     '@page land { size: landscape; margin: 0; }' +
     '@page port { size: portrait; margin: 0; }' +
-    'html, body { margin: 0; padding: 0; background: #fff; }' +
-    '* { -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
-    '.sheet { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; break-after: page; page-break-after: always; }' +
-    '.sheet:last-child { break-after: auto; page-break-after: auto; }' +
-    '.sheet.land { page: land; }' +
-    '.sheet.port { page: port; }' +
-    '.sheet img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; display: block; }' +
-    '</style></head><body>' + sheets + '</body></html>';
+    '.sheet.land { page: land; } .sheet.port { page: port; }';
 
-  const frame = $('printFrame');
-  frame.onload = () => {
-    const w = frame.contentWindow;
-    const imgs = Array.from(w.document.images);
-    const ready = imgs.map(img => img.complete ? Promise.resolve() :
-      new Promise(resolve => { img.onload = resolve; img.onerror = resolve; }));
+  // Wait for every image to finish loading before opening the print dialog
+  const imgs = Array.from($('printArea').querySelectorAll('img'));
+  await Promise.all(imgs.map(img => img.complete ? null :
+    new Promise(resolve => { img.onload = resolve; img.onerror = resolve; })));
 
-    Promise.all(ready).then(() => {
-      setTimeout(() => {
-        hideBusy();
-        try {
-          w.focus();
-          w.print();
-          setStatus('Print dialog opened');
-        } catch (e) {
-          setStatus('Print failed: ' + e.message);
-        }
-      }, 400);
-    });
-  };
-  frame.srcdoc = doc;
+  hideBusy();
+  setTimeout(() => {
+    try {
+      window.print();
+      setStatus('Print dialog opened');
+    } catch (e) {
+      setStatus('Print failed: ' + e.message);
+    }
+  }, 300);
 }
 // Shows the viewer right away with a loading message, before the file arrives
 function openViewerLoading(title) {
