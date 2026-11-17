@@ -675,8 +675,6 @@ async function downloadFile(f) {
   }
 }
 
-// Opens a new tab right away (inside the click), so the browser allows it.
-// The file is printed from that tab, which works even inside Google Sites.
 async function printFile(f) {
   const win = window.open('', '_blank');
   if (!win) {
@@ -689,9 +687,12 @@ async function printFile(f) {
     const res = await runServer('getPrintData', f.id);
     let pages;
     if (res.mime === 'application/pdf') {
-      pages = await pdfPagesToImages(res.data);
+      pages = await pdfPagesToImages(res.data, (n, total) => {
+        win.document.body.innerHTML =
+          '<p style="font-family:sans-serif;padding:20px">Preparing page ' + n + ' of ' + total + '...</p>';
+      });
     } else {
-      pages = [{ src: 'data:' + res.mime + ';base64,' + res.data }];
+      pages = [{ src: 'data:' + res.mime + ';base64,' + res.data, land: null }];
     }
     await printPages(pages, win);
   } catch (e) {
@@ -701,23 +702,28 @@ async function printFile(f) {
   }
 }
 
-// Renders each PDF page as a lossless PNG at high resolution, so text and photos match the file
-async function pdfPagesToImages(b64) {
+// Renders each PDF page at 2x as a high-quality JPEG (faster than PNG at 3x, still sharp on paper).
+// Also records each page's orientation from its size, so no extra measuring is needed.
+async function pdfPagesToImages(b64, onProgress) {
   if (!window.pdfjsLib) throw new Error('PDF viewer library did not load');
   const pdf = await pdfjsLib.getDocument({ data: base64ToBytes(b64) }).promise;
   const pages = [];
   for (let n = 1; n <= pdf.numPages; n++) {
+    if (onProgress) onProgress(n, pdf.numPages);
     const page = await pdf.getPage(n);
-    const viewport = page.getViewport({ scale: 3 });
+    const viewport = page.getViewport({ scale: 2 });
     const canvas = document.createElement('canvas');
     canvas.width = viewport.width;
     canvas.height = viewport.height;
     await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
-    pages.push({ src: canvas.toDataURL('image/png') });
+    pages.push({
+      src: canvas.toDataURL('image/jpeg', 0.92),
+      land: viewport.width > viewport.height
+    });
   }
   return pages;
 }
-
+  
 // Reads each image's size first, so every sheet knows if it is landscape or portrait
 function measurePages(pages) {
   return Promise.all(pages.map(p => new Promise(resolve => {
