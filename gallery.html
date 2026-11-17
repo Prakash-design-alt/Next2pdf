@@ -675,31 +675,30 @@ async function downloadFile(f) {
     setStatus('Download failed: ' + e.message);
   }
 }
-
-// Printing: the file is turned into printable pages (images, or PDF pages rendered by pdf.js),
-// placed in the print frame, and the print dialog opens for that frame only.
+// Printing: each image is scaled to fit inside one sheet (never cut), and each sheet
+// uses landscape or portrait to match its image.
 async function printFile(f) {
   showBusy('Preparing print, please wait...');
   try {
     const res = await runServer('getImageData', f.id);
-    let bodyHtml;
+    let pages;
     if (res.mime === 'application/pdf') {
-      bodyHtml = await pdfPagesToImages(res.data);
+      pages = await pdfPagesToImages(res.data);
     } else {
-      bodyHtml = '<img src="data:' + res.mime + ';base64,' + res.data + '">';
+      pages = [{ src: 'data:' + res.mime + ';base64,' + res.data }];
     }
-    printHtml(bodyHtml);
+    await printPages(pages);
   } catch (e) {
     hideBusy();
     setStatus('Print failed: ' + e.message);
   }
 }
 
-// Renders each PDF page to a high-quality image, so the PDF viewer is not needed for printing
+// Renders each PDF page to an image (scale 2 keeps text sharp when printed)
 async function pdfPagesToImages(b64) {
   if (!window.pdfjsLib) throw new Error('PDF viewer library did not load');
   const pdf = await pdfjsLib.getDocument({ data: base64ToBytes(b64) }).promise;
-  let html = '';
+  const pages = [];
   for (let n = 1; n <= pdf.numPages; n++) {
     const page = await pdf.getPage(n);
     const viewport = page.getViewport({ scale: 2 });
@@ -707,20 +706,42 @@ async function pdfPagesToImages(b64) {
     canvas.width = viewport.width;
     canvas.height = viewport.height;
     await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
-    html += '<img src="' + canvas.toDataURL('image/jpeg', 0.92) + '">';
+    pages.push({ src: canvas.toDataURL('image/jpeg', 0.92) });
   }
-  return html;
+  return pages;
 }
 
-// Loads the pages into the print frame, waits for all images, then opens the print dialog
-function printHtml(bodyHtml) {
-  const frame = $('printFrame');
-  const doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><style>' +
-    '@page{margin:0}html,body{margin:0;padding:0}' +
-    'img{display:block;width:100%;height:auto;page-break-after:always;break-after:page}' +
-    'img:last-child{page-break-after:auto;break-after:auto}' +
-    '</style></head><body>' + bodyHtml + '</body></html>';
+// Reads each image's size first, so every sheet knows if it is landscape or portrait
+function measurePages(pages) {
+  return Promise.all(pages.map(p => new Promise(resolve => {
+    const im = new Image();
+    im.onload = () => { p.land = im.naturalWidth > im.naturalHeight; resolve(); };
+    im.onerror = () => { p.land = false; resolve(); };
+    im.src = p.src;
+  })));
+}
 
+// Builds the print pages in the hidden print frame, then opens the print dialog
+async function printPages(pages) {
+  await measurePages(pages);
+
+  const sheets = pages.map(p =>
+    '<div class="sheet ' + (p.land ? 'land' : 'port') + '"><img src="' + p.src + '"></div>'
+  ).join('');
+
+  const doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><style>' +
+    '@page { margin: 0; }' +
+    '@page land { size: landscape; margin: 0; }' +
+    '@page port { size: portrait; margin: 0; }' +
+    'html, body { margin: 0; padding: 0; }' +
+    '.sheet { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; break-after: page; page-break-after: always; }' +
+    '.sheet:last-child { break-after: auto; page-break-after: auto; }' +
+    '.sheet.land { page: land; }' +
+    '.sheet.port { page: port; }' +
+    '.sheet img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; display: block; }' +
+    '</style></head><body>' + sheets + '</body></html>';
+
+  const frame = $('printFrame');
   frame.onload = () => {
     const w = frame.contentWindow;
     const imgs = Array.from(w.document.images);
@@ -740,7 +761,6 @@ function printHtml(bodyHtml) {
       }, 400);
     });
   };
-
   frame.srcdoc = doc;
 }
 
