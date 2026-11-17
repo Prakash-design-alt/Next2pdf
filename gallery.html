@@ -212,10 +212,10 @@
     .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
   }
 
-  /* Print frame: tiny and transparent (not hidden), so the browser prints it reliably */
+  /* Print frame: full page size, placed off-screen so it is not visible but still lays out at real size */
   #printFrame {
-    position: fixed; left: 0; bottom: 0; width: 1px; height: 1px;
-    border: 0; opacity: 0; pointer-events: none;
+    position: fixed; left: -10000px; top: 0; width: 900px; height: 1200px;
+    border: 0; pointer-events: none;
   }
   /* Direct link button in the top bar */
   .direct-link {
@@ -224,7 +224,7 @@
     font-size: 14px; font-weight: 600; text-decoration: none; white-space: nowrap;
   }
   .direct-link:hover { background: var(--primary-dark); }
-  
+
 </style>
 </head>
 <body>
@@ -703,17 +703,17 @@ async function printFile(f) {
   }
 }
 
-// Renders each PDF page as a lossless PNG at high resolution, so text and photos match the file
+// Renders each PDF page as a high-resolution PNG so text and photos stay sharp
 async function pdfPagesToImages(b64) {
   if (!window.pdfjsLib) throw new Error('PDF viewer library did not load');
   const pdf = await pdfjsLib.getDocument({ data: base64ToBytes(b64) }).promise;
   const pages = [];
   for (let n = 1; n <= pdf.numPages; n++) {
     const page = await pdf.getPage(n);
-    const viewport = page.getViewport({ scale: 3 });
+    const viewport = page.getViewport({ scale: 2 });
     const canvas = document.createElement('canvas');
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
+    canvas.width = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
     await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
     pages.push({ src: canvas.toDataURL('image/png') });
   }
@@ -731,7 +731,7 @@ function measurePages(pages) {
 }
 
 // Builds one sheet per file page, with no margins and no cropping.
-// Each sheet is landscape or portrait to match its own file.
+// Sheets use percentages, not vw/vh, so they fill the page whatever the frame size.
 async function printPages(pages) {
   await measurePages(pages);
 
@@ -742,35 +742,52 @@ async function printPages(pages) {
   const doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><style>' +
     '@page land { size: landscape; margin: 0; }' +
     '@page port { size: portrait; margin: 0; }' +
-    'html, body { margin: 0; padding: 0; background: #fff; }' +
+    'html, body { margin: 0; padding: 0; background: #fff; width: 100%; height: 100%; }' +
     '* { -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
-    '.sheet { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; break-after: page; page-break-after: always; }' +
+    '.sheet { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; break-after: page; page-break-after: always; }' +
     '.sheet:last-child { break-after: auto; page-break-after: auto; }' +
     '.sheet.land { page: land; }' +
     '.sheet.port { page: port; }' +
-    '.sheet img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; display: block; image-rendering: auto; }' +
+    '.sheet img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; display: block; }' +
     '</style></head><body>' + sheets + '</body></html>';
 
   const frame = $('printFrame');
+  let printed = false;
+
+  // If the print page never loads, tell the user instead of failing silently
+  const guard = setTimeout(() => {
+    if (!printed) {
+      hideBusy();
+      setStatus('Print failed: the print page did not load. Please try again.');
+    }
+  }, 30000);
+
   frame.onload = () => {
     const w = frame.contentWindow;
+    if (!w || !w.document) return;
+
     const imgs = Array.from(w.document.images);
     const ready = imgs.map(img => img.complete ? Promise.resolve() :
       new Promise(resolve => { img.onload = resolve; img.onerror = resolve; }));
 
-    Promise.all(ready).then(() => {
-      setTimeout(() => {
+    Promise.all(ready)
+      .then(() => new Promise(resolve => setTimeout(resolve, 400)))
+      .then(() => {
+        if (printed) return;
+        printed = true;
+        clearTimeout(guard);
         hideBusy();
-        try {
-          w.focus();
-          w.print();
-          setStatus('Print dialog opened');
-        } catch (e) {
-          setStatus('Print failed: ' + e.message);
-        }
-      }, 400);
-    });
+        w.focus();
+        w.print();
+        setStatus('Print dialog opened');
+      })
+      .catch(e => {
+        clearTimeout(guard);
+        hideBusy();
+        setStatus('Print failed: ' + e.message);
+      });
   };
+
   frame.srcdoc = doc;
 }
 
