@@ -4,302 +4,256 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Altema Files</title>
-
 <style>
-:root {
-  --bg: #f4f6fb;
-  --surface: #fff;
-  --surface-2: #f8fafc;
-  --border: #e5e9f2;
-  --text: #1e293b;
-  --muted: #64748b;
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
-  --pdf: #dc2626;
-  --img: #0891b2;
-  --folder: #f59e0b;
-  --shadow: 0 1px 2px rgba(15,23,42,.06), 0 4px 14px rgba(15,23,42,.06);
-  --radius: 14px;
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-}
-button, input { font: inherit; }
-button { cursor: pointer; }
-svg { display: block; }
-
-/* Login */
-#loginView {
-  min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
-}
-.login-card {
-  width: 100%; max-width: 380px; background: var(--surface); border-radius: 18px;
-  box-shadow: var(--shadow); padding: 40px 32px; text-align: center;
-}
-.logo-mark {
-  width: 56px; height: 56px; border-radius: 16px; margin: 0 auto 18px;
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
-  display: flex; align-items: center; justify-content: center; color: #fff;
-}
-.login-card h1 { font-size: 22px; margin: 0 0 6px; }
-.login-card p { margin: 0 0 26px; color: var(--muted); font-size: 14px; }
-.google-btn {
-  width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
-  padding: 12px; border: 1px solid var(--border); border-radius: 10px;
-  background: #fff; color: var(--text); font-weight: 600; font-size: 15px;
-  transition: background .15s, box-shadow .15s;
-}
-.google-btn:hover { background: var(--surface-2); box-shadow: var(--shadow); }
-.login-err { color: #dc2626; font-size: 13px; min-height: 18px; margin-top: 14px; }
-
-/* App shell */
-#appView { display: none; }
-.topbar {
-  position: sticky; top: 0; z-index: 20; background: var(--surface);
-  border-bottom: 1px solid var(--border); padding: 12px 24px;
-  display: flex; align-items: center; gap: 16px;
-}
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; white-space: nowrap; }
-.brand .logo-mark { width: 34px; height: 34px; border-radius: 10px; margin: 0; }
-.brand .logo-mark svg { width: 18px; height: 18px; }
-.search { flex: 1; max-width: 560px; position: relative; }
-.search svg {
-  position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted);
-}
-.search input {
-  width: 100%; padding: 10px 14px 10px 38px; border-radius: 10px;
-  border: 1px solid var(--border); background: var(--surface-2); color: var(--text); outline: none;
-}
-.search input:focus {
-  border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,.15);
-}
-.top-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-.user-chip {
-  font-size: 13px; color: var(--muted); max-width: 200px;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.btn {
-  display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px;
-  border-radius: 10px; border: 1px solid var(--border); background: var(--surface);
-  color: var(--text); font-size: 14px; font-weight: 500; transition: background .15s;
-}
-.btn:hover:not(:disabled) { background: var(--surface-2); }
-.btn:disabled { opacity: .45; cursor: default; }
-.btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
-.btn.primary:hover:not(:disabled) { background: var(--primary-dark); }
-.btn svg { width: 16px; height: 16px; }
-
-/* Toolbar */
-.toolbar {
-  display: flex; align-items: center; gap: 12px; padding: 14px 24px 6px; flex-wrap: wrap;
-}
-.crumbs { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; font-size: 14px; }
-.crumb {
-  padding: 6px 10px; border-radius: 8px; background: transparent; border: none;
-  color: var(--muted); font-size: 14px;
-}
-.crumb:hover { background: #e9eefb; color: var(--primary-dark); }
-.crumb.current { color: var(--text); font-weight: 600; cursor: default; }
-.crumb.current:hover { background: transparent; color: var(--text); }
-.crumb-sep { color: #cbd5e1; }
-.status { margin-left: auto; font-size: 13px; color: var(--muted); }
-
-/* Loading */
-.loader {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 14px; padding: 80px 20px; color: var(--muted); font-size: 15px; text-align: center;
-}
-.spinner {
-  width: 42px; height: 42px; border-radius: 50%;
-  border: 4px solid #dbeafe; border-top-color: var(--primary);
-  animation: spin .8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* Content */
-.content { padding: 12px 24px 40px; }
-.section-title {
-  font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--muted); margin: 18px 0 10px;
-}
-.grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
-.tile {
-  position: relative; background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 16px; cursor: pointer;
-  box-shadow: var(--shadow); transition: transform .12s, box-shadow .12s, border-color .12s;
-  display: flex; flex-direction: column; gap: 14px; min-height: 130px;
-}
-.tile:hover {
-  transform: translateY(-2px); border-color: #c7d2fe; box-shadow: 0 8px 22px rgba(37,99,235,.12);
-}
-.tile-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-.badge {
-  width: 44px; height: 44px; border-radius: 12px;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.badge svg { width: 22px; height: 22px; }
-.badge.folder { background: #fef3c7; color: var(--folder); }
-.badge.pdf { background: #fee2e2; color: var(--pdf); }
-.badge.img { background: #cffafe; color: var(--img); }
-.tile-name {
-  font-size: 14px; font-weight: 600; line-height: 1.35; word-break: break-word;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
-.tile-meta { font-size: 12px; color: var(--muted); margin-top: auto; }
-.tile-actions {
-  position: absolute; top: 12px; right: 12px; display: flex; gap: 6px;
-  opacity: 0; transition: opacity .15s;
-}
-.tile:hover .tile-actions, .tile-actions:focus-within { opacity: 1; }
-.icon-btn {
-  width: 32px; height: 32px; border-radius: 8px;
-  border: 1px solid var(--border); background: var(--surface); color: var(--muted);
-  display: flex; align-items: center; justify-content: center;
-}
-.icon-btn:hover { color: var(--primary); border-color: #bfdbfe; }
-.icon-btn svg { width: 16px; height: 16px; }
-
-/* Search results */
-.result-list {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-  overflow: hidden; box-shadow: var(--shadow);
-}
-.result {
-  display: flex; align-items: center; gap: 14px; padding: 12px 16px; cursor: pointer;
-  border-bottom: 1px solid var(--border);
-}
-.result:last-child { border-bottom: none; }
-.result:hover { background: var(--surface-2); }
-.result .badge { width: 38px; height: 38px; border-radius: 10px; }
-.result .badge svg { width: 19px; height: 19px; }
-.result-main { flex: 1; min-width: 0; }
-.result-name {
-  font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.result-path {
-  font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.result-actions { display: flex; gap: 6px; flex-shrink: 0; }
-.text-btn {
-  border: 1px solid var(--border); background: var(--surface); color: var(--text);
-  padding: 6px 12px; border-radius: 8px; font-size: 13px;
-}
-.text-btn:hover { border-color: #bfdbfe; color: var(--primary); }
-.empty {
-  text-align: center; padding: 60px 20px; color: var(--muted); font-size: 14px;
-  background: var(--surface); border: 1px dashed #cbd5e1; border-radius: var(--radius);
-}
-
-/* Viewer */
-#viewer {
-  position: fixed; inset: 0; background: rgba(15,23,42,.75); z-index: 50;
-  display: none; flex-direction: column;
-}
-#viewer.show { display: flex; }
-.viewer-bar {
-  display: flex; align-items: center; gap: 12px; padding: 12px 20px;
-  background: var(--surface); border-bottom: 1px solid var(--border);
-}
-.viewer-title {
-  flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.viewer-body { flex: 1; overflow: auto; padding: 20px; }
-.viewer-loading {
-  display: none; flex-direction: column; align-items: center; justify-content: center;
-  gap: 14px; padding: 80px 20px; color: #e2e8f0; font-size: 15px; text-align: center;
-}
-.viewer-pages { display: none; flex-direction: column; align-items: center; gap: 16px; }
-.viewer-pages canvas {
-  max-width: 100%; height: auto; background: #fff; border-radius: 6px;
-  box-shadow: 0 6px 24px rgba(0,0,0,.25);
-}
-.viewer-image { height: 100%; display: none; align-items: center; justify-content: center; }
-.viewer-image img {
-  max-width: 100%; max-height: 100%; border-radius: 6px; box-shadow: 0 6px 24px rgba(0,0,0,.25);
-}
-
-@media (max-width: 720px) {
-  .topbar { flex-wrap: wrap; padding: 12px 16px; }
-  .search { order: 3; max-width: none; flex-basis: 100%; }
-  .user-chip { display: none; }
-  .toolbar, .content { padding-left: 16px; padding-right: 16px; }
-  .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-  .tile-actions { opacity: 1; }
-}
-
-/* Print layer: hidden on screen, printed only from Print Now */
-#printLayer { display: none; }
-
-@media print {
-  body > *:not(#printLayer) { display: none !important; }
-  #printLayer { display: block !important; }
-  #printLayer .sheet {
-    width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center;
-    break-after: page; page-break-after: always;
+  :root {
+    --bg: #f4f6fb;
+    --surface: #ffffff;
+    --surface-2: #f8fafc;
+    --border: #e5e9f2;
+    --text: #1e293b;
+    --muted: #64748b;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --pdf: #dc2626;
+    --img: #0891b2;
+    --folder: #f59e0b;
+    --shadow: 0 1px 2px rgba(15, 23, 42, .06), 0 4px 14px rgba(15, 23, 42, .06);
+    --radius: 14px;
   }
-  #printLayer .sheet:last-child { break-after: auto; page-break-after: auto; }
-  #printLayer .sheet.land { page: land; }
-  #printLayer .sheet.port { page: port; }
-  #printLayer img { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; }
-}
-@page land { size: landscape; margin: 0; }
-@page port { size: portrait; margin: 0; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+  }
+  button, input { font: inherit; }
+  button { cursor: pointer; }
+  svg { display: block; }
+
+  /* Login */
+  #loginView { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .login-card {
+    width: 100%; max-width: 380px; background: var(--surface); border-radius: 18px;
+    box-shadow: var(--shadow); padding: 40px 32px; text-align: center;
+  }
+  .logo-mark {
+    width: 56px; height: 56px; border-radius: 16px; margin: 0 auto 18px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    display: flex; align-items: center; justify-content: center; color: #fff;
+  }
+  .login-card h1 { font-size: 22px; margin: 0 0 6px; }
+  .login-card p { margin: 0 0 26px; color: var(--muted); font-size: 14px; }
+  .google-btn {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 12px; border: 1px solid var(--border); border-radius: 10px;
+    background: #fff; color: var(--text); font-weight: 600; font-size: 15px;
+    transition: background .15s, box-shadow .15s;
+  }
+  .google-btn:hover { background: var(--surface-2); box-shadow: var(--shadow); }
+  .login-err { color: #dc2626; font-size: 13px; min-height: 18px; margin-top: 14px; }
+
+  /* App shell */
+  #appView { display: none; }
+  .topbar {
+    position: sticky; top: 0; z-index: 20; background: var(--surface);
+    border-bottom: 1px solid var(--border); padding: 12px 24px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; white-space: nowrap; }
+  .brand .logo-mark { width: 34px; height: 34px; border-radius: 10px; margin: 0; }
+  .brand .logo-mark svg { width: 18px; height: 18px; }
+  .search { flex: 1; max-width: 560px; position: relative; }
+  .search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+  .search input {
+    width: 100%; padding: 10px 14px 10px 38px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--surface-2); color: var(--text); outline: none;
+  }
+  .search input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+  .top-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .user-chip {
+    font-size: 13px; color: var(--muted); max-width: 200px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px;
+    border-radius: 10px; border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); font-size: 14px; font-weight: 500; transition: background .15s;
+  }
+  .btn:hover:not(:disabled) { background: var(--surface-2); }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .btn.primary:hover:not(:disabled) { background: var(--primary-dark); }
+  .btn svg { width: 16px; height: 16px; }
+
+  /* Toolbar with breadcrumbs */
+  .toolbar { display: flex; align-items: center; gap: 12px; padding: 14px 24px 6px; flex-wrap: wrap; }
+  .crumbs { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; font-size: 14px; }
+  .crumb {
+    padding: 6px 10px; border-radius: 8px; background: transparent; border: none;
+    color: var(--muted); font-size: 14px;
+  }
+  .crumb:hover { background: #e9eefb; color: var(--primary-dark); }
+  .crumb.current { color: var(--text); font-weight: 600; cursor: default; }
+  .crumb.current:hover { background: transparent; color: var(--text); }
+  .crumb-sep { color: #cbd5e1; }
+  .status { margin-left: auto; font-size: 13px; color: var(--muted); }
+
+  /* Loading indicator */
+  .loader {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; padding: 80px 20px; color: var(--muted); font-size: 15px; text-align: center;
+  }
+  .spinner {
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 4px solid #dbeafe; border-top-color: var(--primary);
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Busy overlay: shown in front of everything while printing is prepared */
+  #busy {
+    position: fixed; inset: 0; z-index: 100; display: none;
+    align-items: center; justify-content: center; background: rgba(15, 23, 42, .55);
+  }
+  #busy.show { display: flex; }
+  .busy-card {
+    background: var(--surface); border-radius: 16px; padding: 28px 36px;
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.25); font-size: 15px; color: var(--text);
+  }
+
+  /* Content */
+  .content { padding: 12px 24px 40px; }
+  .section-title {
+    font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted); margin: 18px 0 10px;
+  }
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  .tile {
+    position: relative; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; cursor: pointer;
+    box-shadow: var(--shadow); transition: transform .12s, box-shadow .12s, border-color .12s;
+    display: flex; flex-direction: column; gap: 14px; min-height: 130px;
+  }
+  .tile:hover { transform: translateY(-2px); border-color: #c7d2fe; box-shadow: 0 8px 22px rgba(37,99,235,.12); }
+  .tile-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .badge {
+    width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .badge svg { width: 22px; height: 22px; }
+  .badge.folder { background: #fef3c7; color: var(--folder); }
+  .badge.pdf { background: #fee2e2; color: var(--pdf); }
+  .badge.img { background: #cffafe; color: var(--img); }
+  .tile-name {
+    font-size: 14px; font-weight: 600; line-height: 1.35; word-break: break-word;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .tile-meta { font-size: 12px; color: var(--muted); margin-top: auto; }
+  .tile-actions {
+    position: absolute; top: 12px; right: 12px; display: flex; gap: 6px;
+    opacity: 0; transition: opacity .15s;
+  }
+  .tile:hover .tile-actions, .tile-actions:focus-within { opacity: 1; }
+  .icon-btn {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .icon-btn:hover { color: var(--primary); border-color: #bfdbfe; }
+  .icon-btn svg { width: 16px; height: 16px; }
+
+  /* Search results */
+  .result-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  .result {
+    display: flex; align-items: center; gap: 14px; padding: 12px 16px; cursor: pointer;
+    border-bottom: 1px solid var(--border);
+  }
+  .result:last-child { border-bottom: none; }
+  .result:hover { background: var(--surface-2); }
+  .result .badge { width: 38px; height: 38px; border-radius: 10px; }
+  .result .badge svg { width: 19px; height: 19px; }
+  .result-main { flex: 1; min-width: 0; }
+  .result-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .result-path { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .result-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .text-btn {
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    padding: 6px 12px; border-radius: 8px; font-size: 13px;
+  }
+  .text-btn:hover { border-color: #bfdbfe; color: var(--primary); }
+
+  .empty {
+    text-align: center; padding: 60px 20px; color: var(--muted); font-size: 14px;
+    background: var(--surface); border: 1px dashed #cbd5e1; border-radius: var(--radius);
+  }
+
+  /* Viewer */
+  #viewer {
+    position: fixed; inset: 0; background: rgba(15, 23, 42, .75); z-index: 50;
+    display: none; flex-direction: column;
+  }
+  #viewer.show { display: flex; }
+  .viewer-bar {
+    display: flex; align-items: center; gap: 12px; padding: 12px 20px;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+  }
+  .viewer-title { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .viewer-body { flex: 1; overflow: auto; padding: 20px; }
+  .viewer-loading { display: none; color: #e2e8f0; }
+  .viewer-pages { display: none; flex-direction: column; align-items: center; gap: 16px; }
+  .viewer-pages canvas { max-width: 100%; height: auto; background: #fff; border-radius: 6px; box-shadow: 0 6px 24px rgba(0,0,0,.25); }
+  .viewer-image { height: 100%; display: none; align-items: center; justify-content: center; }
+  .viewer-image img { max-width: 100%; max-height: 100%; border-radius: 6px; box-shadow: 0 6px 24px rgba(0,0,0,.25); }
+
+  @media (max-width: 720px) {
+    .topbar { flex-wrap: wrap; padding: 12px 16px; }
+    .search { order: 3; max-width: none; flex-basis: 100%; }
+    .user-chip { display: none; }
+    .toolbar, .content { padding-left: 16px; padding-right: 16px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  }
+
+  /* Print frame: tiny and transparent (not hidden), so the browser prints it reliably */
+  #printFrame {
+    position: fixed; left: 0; bottom: 0; width: 1px; height: 1px;
+    border: 0; opacity: 0; pointer-events: none;
+  }
 </style>
 </head>
-
 <body>
 
-<!-- LOGIN -->
+<!-- Login -->
 <div id="loginView">
   <div class="login-card">
     <div class="logo-mark">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
       </svg>
     </div>
     <h1>Altema Files</h1>
     <p>Sign in with your approved Google account to continue.</p>
     <button id="googleBtn" class="google-btn">
-      <svg width="18" height="18" viewBox="0 0 48 48">
-        <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.5l6.7-6.7C35.6 2.4 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.3l7.8 6C12.3 13.3 17.7 9.5 24 9.5z"/>
-        <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 7.1-10 7.1-17.5z"/>
-        <path fill="#FBBC05" d="M10.4 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.8-6C.9 16.5 0 20.1 0 24s.9 7.5 2.6 10.7l7.8-6z"/>
-        <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.4 2.3-6.3 0-11.7-3.8-13.6-9.3l-7.8 6C6.5 42.6 14.6 48 24 48z"/>
-      </svg>
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.5l6.7-6.7C35.6 2.4 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.3l7.8 6C12.3 13.3 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 7.1-10 7.1-17.5z"/><path fill="#FBBC05" d="M10.4 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.8-6C.9 16.5 0 20.1 0 24s.9 7.5 2.6 10.7l7.8-6z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.4 2.3-6.3 0-11.7-3.8-13.6-9.3l-7.8 6C6.5 42.6 14.6 48 24 48z"/></svg>
       Sign in with Google
     </button>
     <div id="loginErr" class="login-err"></div>
   </div>
 </div>
 
-<!-- APP -->
+<!-- App -->
 <div id="appView">
   <header class="topbar">
     <div class="brand">
       <div class="logo-mark">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
         </svg>
       </div>
       <span>Altema Files</span>
     </div>
-
     <div class="search">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <circle cx="11" cy="11" r="7"/>
-        <path d="M21 21l-4.3-4.3"/>
-      </svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       <input id="searchInput" type="search" placeholder="Search folders and files">
     </div>
-
     <div class="top-actions">
       <span id="userChip" class="user-chip"></span>
       <button id="logoutBtn" class="btn">Sign out</button>
@@ -308,18 +262,11 @@ svg { display: block; }
 
   <div class="toolbar">
     <button id="backBtn" class="btn" disabled>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M15 18l-6-6 6-6"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
       Back
     </button>
     <button id="reloadBtn" class="btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12a9 9 0 1 1-3-6.7L21 8"/>
-        <path d="M21 3v5h-5"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
       Refresh
     </button>
     <nav id="crumbs" class="crumbs"></nav>
@@ -331,74 +278,60 @@ svg { display: block; }
   </main>
 </div>
 
-<!-- VIEWER (also shows the print preview) -->
+<!-- Viewer -->
 <div id="viewer">
   <div class="viewer-bar">
     <span id="viewerTitle" class="viewer-title"></span>
     <button id="viewerPrintBtn" class="btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M6 9V2h12v7"/>
-        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-        <rect x="6" y="14" width="12" height="8"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
       Print
     </button>
     <button id="viewerDownloadBtn" class="btn primary">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <path d="M7 10l5 5 5-5"/>
-        <path d="M12 15V3"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
       Download
     </button>
     <button id="closeBtn" class="btn">Close</button>
   </div>
-
   <div class="viewer-body">
-    <div id="viewerLoading" class="viewer-loading">
+    <div id="viewerLoading" class="loader viewer-loading">
       <div class="spinner"></div>
-      <div id="viewerLoadingText">Opening file, please wait...</div>
+      <div>Opening file, please wait...</div>
     </div>
     <div id="viewerPages" class="viewer-pages"></div>
-    <div id="viewerImage" class="viewer-image">
-      <img id="viewerImg" alt="">
-    </div>
+    <div id="viewerImage" class="viewer-image"><img id="viewerImg" alt=""></div>
   </div>
 </div>
 
-<!-- Print layer (hidden on screen; only this is printed) -->
-<div id="printLayer"></div>
+<!-- Busy overlay for printing -->
+<div id="busy">
+  <div class="busy-card">
+    <div class="spinner"></div>
+    <div id="busyText">Preparing print, please wait...</div>
+  </div>
+</div>
+
+<iframe id="printFrame" title="print"></iframe>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
 <script>
-// ============================================================
-// FIREBASE
-// ============================================================
-
+// Firebase project: next2pdf-91479
 firebase.initializeApp({
   apiKey: 'AIzaSyAD2JTDVAOOnmt5ggg9h4lxaLBAB2-CJ5s',
   authDomain: 'next2pdf-91479.firebaseapp.com',
   projectId: 'next2pdf-91479'
 });
 
-// ============================================================
-// BACKEND AND PDF.JS
-// ============================================================
-
+// Apps Script backend (Web app URL)
 const API_URL = 'https://script.google.com/macros/s/AKfycbz3aKtS-j9NusJxNbyQkwXTybXluoqghw4uXTq1wp3mb3UcIEiKqw1g3IBSMvnL816KwQ/exec';
-const PDFJS_WORKER_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 if (window.pdfjsLib) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 }
 
 const $ = id => document.getElementById(id);
-
 const ICONS = {
   folder: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
   pdf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',
@@ -411,6 +344,7 @@ let stack = [];
 let rootId = null;
 let started = false;
 let viewerFile = null;
+let busyTimer = null;
 const folderCache = new Map();
 
 function setStatus(t) { $('status').textContent = t; }
@@ -418,45 +352,36 @@ function current() { return stack[stack.length - 1]; }
 function esc(v) {
   return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
+
+// Spinner with a message, shown while the page waits for the server
 function loaderHtml(message) {
   return '<div class="loader"><div class="spinner"></div><div>' + esc(message) + '</div></div>';
 }
-function base64ToBytes(b64) {
-  const bin = atob(b64);
-  const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  return bytes;
+
+// Full-screen busy overlay (in front of everything, including the viewer)
+function showBusy(message) {
+  $('busyText').textContent = message;
+  $('busy').classList.add('show');
+  clearTimeout(busyTimer);
+  // Safety: never leave the overlay stuck on screen
+  busyTimer = setTimeout(hideBusy, 20000);
 }
 
-// ============================================================
-// SERVER REQUEST
-// ============================================================
+function hideBusy() {
+  clearTimeout(busyTimer);
+  $('busy').classList.remove('show');
+}
 
+// Sends a request to the Apps Script backend with the user's login token
 async function runServer(fn, ...args) {
   const user = firebase.auth().currentUser;
   if (!user) throw new Error('Please sign in');
-
   const token = await user.getIdToken();
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000);
-
-  let resp;
-  try {
-    resp = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ fn: fn, token: token, args: args }),
-      signal: controller.signal
-    });
-  } catch (err) {
-    if (err && err.name === 'AbortError') {
-      throw new Error('The server took more than 60 seconds. Please try again.');
-    }
-    throw err;
-  } finally {
-    clearTimeout(timeoutId);
-  }
-
+  const resp = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ fn: fn, token: token, args: args })
+  });
   const text = await resp.text();
   let data;
   try {
@@ -464,20 +389,18 @@ async function runServer(fn, ...args) {
   } catch (e) {
     throw new Error('Backend did not return data. Check the deployment is set to "Anyone".');
   }
-  if (!data.ok) throw new Error(data.error || 'Server request failed.');
+  if (!data.ok) throw new Error(data.error);
   return data.result;
 }
 
-// ============================================================
-// LOGIN
-// ============================================================
+// Login
 
 function friendlyError(e) {
   const c = e && e.code ? e.code : '';
   if (c === 'auth/popup-blocked') return 'The sign-in window was blocked. Allow pop-ups for this page and try again.';
   if (c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request') return '';
   if (c === 'auth/network-request-failed') return 'Network error. Check your connection.';
-  return e && e.message ? e.message : 'Sign-in failed. Please try again.';
+  return 'Sign-in failed. Please try again.';
 }
 
 $('googleBtn').onclick = () => {
@@ -528,9 +451,7 @@ async function start() {
   }
 }
 
-// ============================================================
-// NAVIGATION
-// ============================================================
+// Navigation
 
 function renderCrumbs() {
   const el = $('crumbs');
@@ -546,9 +467,7 @@ function renderCrumbs() {
     const b = document.createElement('button');
     b.className = 'crumb' + (isLast ? ' current' : '');
     b.textContent = f.name;
-    if (!isLast) {
-      b.onclick = () => { stack = stack.slice(0, i + 1); loadCurrent(); };
-    }
+    if (!isLast) b.onclick = () => { stack = stack.slice(0, i + 1); loadCurrent(); };
     el.appendChild(b);
   });
   $('backBtn').disabled = stack.length <= 1;
@@ -582,10 +501,6 @@ function loadCurrent() {
     });
 }
 
-// ============================================================
-// RENDER FILES AND FOLDERS
-// ============================================================
-
 function render(res) {
   const wrap = $('content');
   wrap.innerHTML = '';
@@ -597,8 +512,7 @@ function render(res) {
   }
 
   if (res.folders.length) {
-    wrap.insertAdjacentHTML('beforeend',
-      '<div class="section-title">Folders (' + res.folders.length + ')</div>');
+    wrap.insertAdjacentHTML('beforeend', '<div class="section-title">Folders (' + res.folders.length + ')</div>');
     const g = document.createElement('div');
     g.className = 'grid';
     res.folders.forEach(f => g.appendChild(folderTile(f)));
@@ -606,8 +520,7 @@ function render(res) {
   }
 
   if (res.files.length) {
-    wrap.insertAdjacentHTML('beforeend',
-      '<div class="section-title">Files (' + res.files.length + ')</div>');
+    wrap.insertAdjacentHTML('beforeend', '<div class="section-title">Files (' + res.files.length + ')</div>');
     const g = document.createElement('div');
     g.className = 'grid';
     res.files.forEach(f => g.appendChild(fileTile(f)));
@@ -634,7 +547,7 @@ function fileTile(f) {
   el.className = 'tile';
   el.innerHTML =
     '<div class="tile-top"><div class="badge ' + (isPdf ? 'pdf' : 'img') + '">' +
-    (isPdf ? ICONS.pdf : ICONS.img) + '</div></div>' +
+      (isPdf ? ICONS.pdf : ICONS.img) + '</div></div>' +
     '<div class="tile-name">' + esc(f.name) + '</div>' +
     '<div class="tile-meta">' + (isPdf ? 'PDF document' : 'Image') + '</div>';
 
@@ -645,7 +558,7 @@ function fileTile(f) {
   pr.className = 'icon-btn';
   pr.title = 'Print';
   pr.innerHTML = ICONS.print;
-  pr.onclick = e => { e.stopPropagation(); startPrint(f); };
+  pr.onclick = e => { e.stopPropagation(); printFile(f); };
 
   const dl = document.createElement('button');
   dl.className = 'icon-btn';
@@ -661,25 +574,16 @@ function fileTile(f) {
   return el;
 }
 
-// ============================================================
-// SEARCH
-// ============================================================
-
 function resultRow(r) {
   const isPdf = r.mime === 'application/pdf';
   const kind = r.isFolder ? 'folder' : (isPdf ? 'pdf' : 'img');
   const where = ['Home'].concat(r.where.map(p => p.name)).join(' / ');
-
   const el = document.createElement('div');
   el.className = 'result';
   el.innerHTML =
-    '<div class="badge ' + kind + '">' +
-    (r.isFolder ? ICONS.folder : (isPdf ? ICONS.pdf : ICONS.img)) +
-    '</div>' +
-    '<div class="result-main">' +
-    '<div class="result-name">' + esc(r.name) + '</div>' +
-    '<div class="result-path">' + esc(where) + '</div>' +
-    '</div>';
+    '<div class="badge ' + kind + '">' + (r.isFolder ? ICONS.folder : (isPdf ? ICONS.pdf : ICONS.img)) + '</div>' +
+    '<div class="result-main"><div class="result-name">' + esc(r.name) + '</div>' +
+    '<div class="result-path">' + esc(where) + '</div></div>';
 
   if (!r.isFolder) {
     const actions = document.createElement('div');
@@ -688,38 +592,31 @@ function resultRow(r) {
     const pb = document.createElement('button');
     pb.className = 'text-btn';
     pb.textContent = 'Print';
-    pb.onclick = e => {
-      e.stopPropagation();
-      startPrint({ id: r.id, name: r.name, mime: r.mime });
-    };
+    pb.onclick = e => { e.stopPropagation(); printFile({ id: r.id, name: r.name, mime: r.mime }); };
 
     const db = document.createElement('button');
     db.className = 'text-btn';
     db.textContent = 'Download';
-    db.onclick = e => {
-      e.stopPropagation();
-      downloadFile({ id: r.id, name: r.name });
-    };
+    db.onclick = e => { e.stopPropagation(); downloadFile({ id: r.id, name: r.name }); };
 
     actions.appendChild(pb);
     actions.appendChild(db);
     el.appendChild(actions);
   }
-
   el.onclick = () => openResult(r);
   return el;
 }
 
+// Search
+
 function doSearch() {
   const term = $('searchInput').value.trim();
   if (!term) { loadCurrent(); return; }
-
   const wrap = $('content');
   wrap.innerHTML = loaderHtml('Searching, please wait...');
   $('crumbs').innerHTML = '<span class="crumb current">Search: ' + esc(term) + '</span>';
   $('backBtn').disabled = true;
   setStatus('');
-
   runServer('searchItems', term)
     .then(res => {
       if (!res.length) {
@@ -747,9 +644,18 @@ function openResult(r) {
   if (!r.isFolder) openItem({ id: r.id, name: r.name, mime: r.mime });
 }
 
-// ============================================================
-// DOWNLOAD
-// ============================================================
+// Download, print and viewer
+
+function base64ToBytes(b64) {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+function openItem(f) {
+  return f.mime === 'application/pdf' ? openPdf(f) : openImage(f);
+}
 
 async function downloadFile(f) {
   setStatus('Preparing ' + f.name + '...');
@@ -769,132 +675,106 @@ async function downloadFile(f) {
   }
 }
 
-// ============================================================
-// PRINT (same tab)
-// The file is prepared here, shown in the viewer as "Ready",
-// and Print Now opens the browser print dialog for this page.
-// ============================================================
-
-function setPrintMessage(text) {
-  $('viewerLoadingText').textContent = text;
-}
-
-function showPrintPreview(title) {
-  $('viewerTitle').textContent = title;
-  $('viewerLoading').style.display = 'flex';
-  $('viewerPages').style.display = 'none';
-  $('viewerImage').style.display = 'none';
-  $('viewer').classList.add('show');
-  const old = document.getElementById('printNowBtn');
-  if (old) old.remove();
-  setPrintMessage('Preparing print, please wait...');
-}
-
-// Puts the pages into the print layer (hidden on screen) and waits for images to load
-function fillPrintLayer(pages) {
-  const layer = $('printLayer');
-  layer.innerHTML = pages.map(p =>
-    '<div class="sheet ' + (p.land ? 'land' : 'port') + '"><img src="' + p.src + '"></div>'
-  ).join('');
-
-  return Promise.all(Array.from(layer.querySelectorAll('img')).map(img =>
-    img.complete ? null : new Promise(resolve => { img.onload = resolve; img.onerror = resolve; })
-  ));
-}
-
-// Renders each PDF page to an image
-async function renderPdfPages(b64) {
-  if (!window.pdfjsLib) throw new Error('The PDF library did not load.');
-  const pdf = await pdfjsLib.getDocument({ data: base64ToBytes(b64) }).promise;
-  const pages = [];
-
-  for (let n = 1; n <= pdf.numPages; n++) {
-    setPrintMessage('Preparing page ' + n + ' of ' + pdf.numPages + '...');
-
-    const page = await pdf.getPage(n);
-    const base = page.getViewport({ scale: 1 });
-    const scale = Math.min(2, 2400 / Math.max(base.width, base.height));
-    const vp = page.getViewport({ scale: scale });
-
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.ceil(vp.width);
-    canvas.height = Math.ceil(vp.height);
-    const ctx = canvas.getContext('2d', { alpha: false });
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    await page.render({ canvasContext: ctx, viewport: vp }).promise;
-
-    pages.push({
-      src: canvas.toDataURL('image/jpeg', 0.92),
-      land: base.width > base.height
-    });
-
-    canvas.width = 0;
-    canvas.height = 0;
-    page.cleanup();
-  }
-  return pages;
-}
-
-// Reads whether a photo is landscape or portrait
-function photoPage(mime, b64) {
-  const src = 'data:' + (mime || 'image/jpeg') + ';base64,' + b64;
-  return new Promise(resolve => {
-    const im = new Image();
-    im.onload = () => resolve({ src: src, land: im.naturalWidth > im.naturalHeight });
-    im.onerror = () => resolve({ src: src, land: false });
-    im.src = src;
-  });
-}
-
-async function startPrint(f) {
-  showPrintPreview(f.name);
+// Printing: each image is scaled to fit inside one sheet (never cut), and each sheet
+// uses landscape or portrait to match its image.
+async function printFile(f) {
+  showBusy('Preparing print, please wait...');
   try {
     const res = await runServer('getPrintData', f.id);
-    if (!res || !res.data) throw new Error('The server returned an empty file.');
-
-    const pages = res.mime === 'application/pdf'
-      ? await renderPdfPages(res.data)
-      : [await photoPage(res.mime, res.data)];
-
-    setPrintMessage('Loading ' + pages.length + ' page(s)...');
-    await fillPrintLayer(pages);
-
-    // Show "Ready" with a Print Now button in the viewer
-    setPrintMessage('Ready: ' + pages.length + ' page(s). Click Print Now.');
-    const btn = document.createElement('button');
-    btn.id = 'printNowBtn';
-    btn.className = 'btn primary';
-    btn.textContent = 'Print Now';
-    btn.style.marginTop = '8px';
-    btn.onclick = () => window.print();
-    $('viewerLoading').appendChild(btn);
-
-    setStatus('Ready to print.');
+    let pages;
+    if (res.mime === 'application/pdf') {
+      pages = await pdfPagesToImages(res.data);
+    } else {
+      pages = [{ src: 'data:' + res.mime + ';base64,' + res.data }];
+    }
+    await printPages(pages);
   } catch (e) {
-    setPrintMessage('Print failed: ' + e.message);
+    hideBusy();
     setStatus('Print failed: ' + e.message);
   }
 }
 
-// ============================================================
-// VIEWER
-// ============================================================
-
-function openItem(f) {
-  return f.mime === 'application/pdf' ? openPdf(f) : openImage(f);
+// Renders each PDF page as a lossless PNG at high resolution, so text and photos match the file
+async function pdfPagesToImages(b64) {
+  if (!window.pdfjsLib) throw new Error('PDF viewer library did not load');
+  const pdf = await pdfjsLib.getDocument({ data: base64ToBytes(b64) }).promise;
+  const pages = [];
+  for (let n = 1; n <= pdf.numPages; n++) {
+    const page = await pdf.getPage(n);
+    const viewport = page.getViewport({ scale: 3 });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
+    pages.push({ src: canvas.toDataURL('image/png') });
+  }
+  return pages;
 }
 
+// Reads each image's size first, so every sheet knows if it is landscape or portrait
+function measurePages(pages) {
+  return Promise.all(pages.map(p => new Promise(resolve => {
+    const im = new Image();
+    im.onload = () => { p.land = im.naturalWidth > im.naturalHeight; resolve(); };
+    im.onerror = () => { p.land = false; resolve(); };
+    im.src = p.src;
+  })));
+}
+
+// Builds one sheet per file page, with no margins and no cropping.
+// Each sheet is landscape or portrait to match its own file.
+async function printPages(pages) {
+  await measurePages(pages);
+
+  const sheets = pages.map(p =>
+    '<div class="sheet ' + (p.land ? 'land' : 'port') + '"><img src="' + p.src + '"></div>'
+  ).join('');
+
+  const doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><style>' +
+    '@page land { size: landscape; margin: 0; }' +
+    '@page port { size: portrait; margin: 0; }' +
+    'html, body { margin: 0; padding: 0; background: #fff; }' +
+    '* { -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
+    '.sheet { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; break-after: page; page-break-after: always; }' +
+    '.sheet:last-child { break-after: auto; page-break-after: auto; }' +
+    '.sheet.land { page: land; }' +
+    '.sheet.port { page: port; }' +
+    '.sheet img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; display: block; image-rendering: auto; }' +
+    '</style></head><body>' + sheets + '</body></html>';
+
+  const frame = $('printFrame');
+  frame.onload = () => {
+    const w = frame.contentWindow;
+    const imgs = Array.from(w.document.images);
+    const ready = imgs.map(img => img.complete ? Promise.resolve() :
+      new Promise(resolve => { img.onload = resolve; img.onerror = resolve; }));
+
+    Promise.all(ready).then(() => {
+      setTimeout(() => {
+        hideBusy();
+        try {
+          w.focus();
+          w.print();
+          setStatus('Print dialog opened');
+        } catch (e) {
+          setStatus('Print failed: ' + e.message);
+        }
+      }, 400);
+    });
+  };
+  frame.srcdoc = doc;
+}
+
+// Shows the viewer right away with a loading message, before the file arrives
 function openViewerLoading(title) {
   $('viewerTitle').textContent = title;
   $('viewerLoading').style.display = 'flex';
   $('viewerPages').style.display = 'none';
   $('viewerImage').style.display = 'none';
   $('viewer').classList.add('show');
-  setPrintMessage('Opening file, please wait...');
 }
 
+// Replaces the loading message with the file, once it is ready
 function showViewer(title, mode) {
   $('viewerTitle').textContent = title;
   $('viewerLoading').style.display = 'none';
@@ -915,7 +795,6 @@ async function openPdf(f) {
   setStatus('');
   try {
     if (!window.pdfjsLib) throw new Error('PDF viewer library did not load');
-
     const res = await runServer('getViewData', f.id);
     const pdf = await pdfjsLib.getDocument({ data: base64ToBytes(res.data) }).promise;
 
@@ -961,26 +840,17 @@ function closeViewer() {
   $('viewerLoading').style.display = 'none';
   $('viewerPages').innerHTML = '';
   $('viewerImg').src = '';
-  $('printLayer').innerHTML = '';
-  const b = document.getElementById('printNowBtn');
-  if (b) b.remove();
   viewerFile = null;
 }
 
-// ============================================================
-// EVENTS
-// ============================================================
+// Events
 
 $('backBtn').onclick = goBack;
 $('reloadBtn').onclick = loadCurrent;
 $('closeBtn').onclick = closeViewer;
 $('viewerDownloadBtn').onclick = () => { if (viewerFile) downloadFile(viewerFile); };
-$('viewerPrintBtn').onclick = () => { if (viewerFile) startPrint(viewerFile); };
-
-$('viewer').addEventListener('click', e => {
-  if (e.target.classList.contains('viewer-body')) closeViewer();
-});
-
+$('viewerPrintBtn').onclick = () => { if (viewerFile) printFile(viewerFile); };
+$('viewer').addEventListener('click', e => { if (e.target.classList.contains('viewer-body')) closeViewer(); });
 $('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
 $('searchInput').addEventListener('input', e => { if (!e.target.value) loadCurrent(); });
 </script>
