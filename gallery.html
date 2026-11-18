@@ -686,21 +686,46 @@ async function downloadFile(f) {
 
 // Printing: each image is scaled to fit inside one sheet (never cut), and each sheet
 // uses landscape or portrait to match its image.
+  
 async function printFile(f) {
   showBusy('Preparing print, please wait...');
   try {
     const res = await runServer('getPrintData', f.id);
-    let pages;
     if (res.mime === 'application/pdf') {
-      pages = await pdfPagesToImages(res.data);
+      printPdfDirect(res.data);
     } else {
-      pages = [{ src: 'data:' + res.mime + ';base64,' + res.data }];
+      await printPages([{ src: 'data:' + res.mime + ';base64,' + res.data }]);
     }
-    await printPages(pages);
   } catch (e) {
     hideBusy();
     setStatus('Print failed: ' + e.message);
   }
+}
+
+// Prints the original PDF through the browser's own PDF viewer (no image conversion)
+function printPdfDirect(b64) {
+  const frame = $('printFrame');
+  const blob = new Blob([base64ToBytes(b64)], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+
+  // Remove any srcdoc left from photo printing, so the PDF URL is used
+  frame.removeAttribute('srcdoc');
+
+  frame.onload = () => {
+    setTimeout(() => {
+      hideBusy();
+      try {
+        frame.contentWindow.focus();
+        frame.contentWindow.print();
+        setStatus('Print dialog opened');
+      } catch (e) {
+        setStatus('Print failed: ' + e.message);
+      }
+    }, 800);
+  };
+
+  frame.src = url;
+  setTimeout(() => URL.revokeObjectURL(url), 120000);
 }
 
 // Renders each PDF page as a high-resolution PNG so text and photos stay sharp
