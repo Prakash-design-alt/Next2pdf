@@ -821,6 +821,7 @@ async function openPdf(f) {
   setStatus('');
   try {
     if (!window.pdfjsLib) throw new Error('PDF viewer library did not load');
+
     const res = await runServer('getViewData', f.id);
     const pdf = await pdfjsLib.getDocument({ data: base64ToBytes(res.data) }).promise;
 
@@ -832,12 +833,14 @@ async function openPdf(f) {
     for (let n = 1; n <= pdf.numPages; n++) {
       const page = await pdf.getPage(n);
       const base = page.getViewport({ scale: 1 });
-      const scale = (width / base.width) * (window.devicePixelRatio > 1 ? 1.5 : 1);
+      const scale = (width / base.width) * (window.devicePixelRatio > 1 ? 1.25 : 1);
       const viewport = page.getViewport({ scale: scale });
+
       const canvas = document.createElement('canvas');
       canvas.width = viewport.width;
       canvas.height = viewport.height;
       pages.appendChild(canvas);
+
       await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
     }
     setStatus(prev);
@@ -868,11 +871,24 @@ function closeViewer() {
   $('viewerImg').src = '';
   viewerFile = null;
 }
+// Refresh: fetches the current folder from Drive, ignoring the server cache
+function refreshCurrent() {
+  const id = current().id;
+  renderCrumbs();
+  setStatus('Refreshing...');
 
+  runServer('refreshFolder', id)
+    .then(res => {
+      folderCache.set(id, res);
+      if (current().id === id) render(res);
+    })
+    .catch(e => setStatus('Error: ' + e.message));
+}
+  
 // Events
 
 $('backBtn').onclick = goBack;
-$('reloadBtn').onclick = loadCurrent;
+$('reloadBtn').onclick = refreshCurrent;
 $('closeBtn').onclick = closeViewer;
 $('viewerDownloadBtn').onclick = () => { if (viewerFile) downloadFile(viewerFile); };
 $('viewerPrintBtn').onclick = () => { if (viewerFile) printFile(viewerFile); };
