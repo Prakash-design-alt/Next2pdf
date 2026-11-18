@@ -838,7 +838,16 @@ function closeViewerOnError(f, e) {
   $('viewer').classList.remove('show');
   setStatus('Could not open ' + f.name + ': ' + e.message);
 }
-
+// Returns true if a rendered page is blank (all white), so it can be skipped
+function isBlankCanvas(canvas) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const data = ctx.getImageData(0, 0, w, h).data;
+  for (let i = 0; i < data.length; i += 4 * 7) {
+    if (data[i] < 245 || data[i + 1] < 245 || data[i + 2] < 245) return false;
+  }
+  return true;
+}
 async function openPdf(f) {
   const prev = $('status').textContent;
   viewerFile = f;
@@ -867,7 +876,10 @@ async function openPdf(f) {
       pages.appendChild(canvas);
 
       await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
-    }
+      if (isBlankCanvas(canvas)) {
+        canvas.remove();
+        continue;
+      }
     setStatus(prev);
   } catch (e) {
     closeViewerOnError(f, e);
