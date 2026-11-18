@@ -240,6 +240,21 @@ svg { display: block; }
   position: fixed; left: 0; bottom: 0; width: 1px; height: 1px;
   border: 0; opacity: 0; pointer-events: none;
 }
+  /* Scrolling notice: moves from right to left */
+  .ticker {
+    background: #eef4ff; color: #1d4ed8; font-size: 13px; font-weight: 600;
+    overflow: hidden; white-space: nowrap; border-bottom: 1px solid var(--border);
+    padding: 7px 0;
+  }
+  .ticker-text {
+    display: inline-block; padding-left: 16px;
+    animation: ticker 14s linear infinite;
+  }
+  @keyframes ticker {
+    from { transform: translateX(100vw); }
+    to   { transform: translateX(-100%); }
+  }
+  
 </style>
 </head>
 
@@ -294,7 +309,7 @@ svg { display: block; }
       <button id="logoutBtn" class="btn">Sign out</button>
     </div>
   </header>
-
+  <div class="ticker"><span class="ticker-text">Search supports plate number, e.g. 3127 or ZSA 3127</span></div>
   <div class="toolbar">
     <button id="backBtn" class="btn" disabled>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
