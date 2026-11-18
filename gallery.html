@@ -878,6 +878,11 @@ $('viewerDownloadBtn').onclick = () => { if (viewerFile) downloadFile(viewerFile
 $('viewerPrintBtn').onclick = () => { if (viewerFile) printFile(viewerFile); };
 $('viewer').addEventListener('click', e => { if (e.target.classList.contains('viewer-body')) closeViewer(); });
 $('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+  let searchTimer = null;
+$('searchInput').addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(doSearch, 500);
+});
 $('searchInput').addEventListener('input', e => { if (!e.target.value) loadCurrent(); });
 </script>
 </body>
