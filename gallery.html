@@ -254,6 +254,14 @@ svg { display: block; }
     from { transform: translateX(100vw); }
     to   { transform: translateX(-100%); }
   }
+    /* Hover box with expiry dates on folder tiles */
+  .tile[data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute; left: 12px; top: calc(100% + 8px); z-index: 30;
+    background: #1e293b; color: #fff; font-size: 12px; line-height: 1.7;
+    padding: 10px 12px; border-radius: 10px; white-space: pre;
+    box-shadow: var(--shadow); pointer-events: none;
+  }
   
 </style>
 </head>
@@ -520,6 +528,7 @@ async function start() {
     rootId = await runServer('getRootId');
     stack = [{ id: rootId, name: 'Home' }];
     loadCurrent();
+    loadExpiryMap();
   } catch (e) {
     $('content').innerHTML = '';
     if (String(e.message).indexOf('Access denied') !== -1) {
@@ -610,6 +619,7 @@ function render(res) {
     wrap.innerHTML = '<div class="empty">This folder is empty.</div>';
     setStatus('');
     return;
+    applyExpiryTips();
   }
 
   if (res.folders.length) {
@@ -634,6 +644,7 @@ function render(res) {
 function folderTile(f) {
   const el = document.createElement('div');
   el.className = 'tile';
+    el.dataset.folder = f.name;
   el.innerHTML =
     '<div class="tile-top"><div class="badge folder">' + ICONS.folder + '</div></div>' +
     '<div class="tile-name">' + esc(f.name) + '</div>' +
@@ -974,7 +985,31 @@ function closeViewer() {
   $('viewerImg').src = '';
   viewerFile = null;
 }
+// ============================================================
+// EXPIRY DATES ON FOLDER HOVER
+// ============================================================
 
+let expiryMap = {};
+
+function applyExpiryTips() {
+  document.querySelectorAll('.tile[data-folder]').forEach(el => {
+    const i = expiryMap[el.dataset.folder];
+    if (!i) return;
+    el.dataset.tip =
+      'Registration expire: ' + (i.reg || '-') + '\n' +
+      'Insurance expire: ' + (i.ins || '-') + '\n' +
+      'MVPI expire: ' + (i.mvpi || '-');
+  });
+}
+
+async function loadExpiryMap() {
+  try {
+    expiryMap = await runServer('getExpiryMap');
+    applyExpiryTips();
+  } catch (e) {
+    // Dates are optional; the gallery still works without them
+  }
+}
 // ============================================================
 // EVENTS
 // ============================================================
