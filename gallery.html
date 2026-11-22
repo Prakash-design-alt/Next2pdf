@@ -691,20 +691,14 @@ function fileTile(f) {
   el.onclick = () => openItem(f);
   return el;
 }
-// Builds the tooltip text for a folder name, or '' if there are no dates for it
-function tipFor(name) {
-  const i = expiryMap[name];
-  if (!i) return '';
-  return 'Registration expire: ' + (i.reg || '-') + '\n' +
-         'Insurance expire: ' + (i.ins || '-') + '\n' +
-         'MVPI expire: ' + (i.mvpi || '-');
-}
+
 // ============================================================
 // EXPIRY DATES ON FOLDER HOVER
+// Works on folder tiles and on folder rows in search results.
 // ============================================================
 
 function applyExpiryTips() {
-  document.querySelectorAll('.tile[data-folder]').forEach(el => {
+  document.querySelectorAll('[data-folder]').forEach(el => {
     const i = expiryMap[el.dataset.folder];
     if (!i) return;
     el.dataset.tip =
@@ -770,7 +764,7 @@ function resultRow(r) {
 
   const el = document.createElement('div');
   el.className = 'result';
-  if (r.isFolder && tipFor(r.name)) el.dataset.tip = tipFor(r.name);
+  if (r.isFolder) el.dataset.folder = r.name;
   el.innerHTML =
     '<div class="badge ' + kind + '">' +
     (r.isFolder ? ICONS.folder : (isPdf ? ICONS.pdf : ICONS.img)) +
@@ -825,6 +819,7 @@ function doSearch() {
       list.className = 'result-list';
       res.forEach(r => list.appendChild(resultRow(r)));
       wrap.appendChild(list);
+      applyExpiryTips();
       setStatus(res.length + ' matches');
     })
     .catch(e => {
@@ -1063,7 +1058,9 @@ function closeViewer() {
 // ============================================================
 // EVENTS
 // ============================================================
+
 setupTooltip();
+
 $('backBtn').onclick = goBack;
 $('reloadBtn').onclick = refreshCurrent;
 $('closeBtn').onclick = closeViewer;
