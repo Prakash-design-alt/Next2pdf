@@ -126,6 +126,23 @@ svg { display: block; }
 .crumb-sep { color: #cbd5e1; }
 .status { margin-left: auto; font-size: 13px; color: var(--muted); }
 
+/* Chassis box (shown inside a folder that has a chassis number) */
+.chassis-box {
+  display: none; align-items: center; gap: 8px; padding: 6px 10px;
+  border: 1px solid #bfdbfe; background: #eff6ff; border-radius: 10px; font-size: 13px;
+}
+.chassis-box.show { display: inline-flex; }
+.chassis-box .chassis-label { color: #1e3a8a; font-weight: 600; }
+.chassis-box code {
+  font-family: Consolas, "Courier New", monospace; color: var(--text); font-size: 13px;
+  user-select: all;
+}
+.chassis-copy {
+  padding: 5px 10px; font-size: 12px; border-radius: 8px; border: none;
+  background: var(--primary); color: #fff; white-space: nowrap;
+}
+.chassis-copy:hover { background: var(--primary-dark); }
+
 /* Loading */
 .loader {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -311,7 +328,7 @@ svg { display: block; }
         <circle cx="11" cy="11" r="7"/>
         <path d="M21 21l-4.3-4.3"/>
       </svg>
-      <input id="searchInput" type="search" placeholder="Search folders, files, or plate number">
+      <input id="searchInput" type="search" placeholder="Search folders, files, plate or chassis number">
     </div>
 
     <div class="top-actions">
@@ -321,7 +338,7 @@ svg { display: block; }
     </div>
   </header>
 
-  <div class="ticker"><span class="ticker-text">Search supports plate number, e.g. 3127 or ZSA 3127</span></div>
+  <div class="ticker"><span class="ticker-text">Search supports plate number or chassis number, e.g. 3127, ZSA 3127 or WDB6563321K058758</span></div>
 
   <div class="toolbar">
     <button id="backBtn" class="btn" disabled>
@@ -333,6 +350,11 @@ svg { display: block; }
       Refresh
     </button>
     <nav id="crumbs" class="crumbs"></nav>
+    <div id="chassisBox" class="chassis-box">
+      <span class="chassis-label">Chassis:</span>
+      <code id="chassisText"></code>
+      <button id="chassisCopy" class="chassis-copy">Copy chassis</button>
+    </div>
     <span id="status" class="status"></span>
   </div>
 
@@ -524,6 +546,7 @@ firebase.auth().onAuthStateChanged(user => {
     folderCache.clear();
     $('content').innerHTML = '';
     $('crumbs').innerHTML = '';
+    $('chassisBox').classList.remove('show');
     setStatus('');
   }
 });
@@ -570,6 +593,36 @@ function renderCrumbs() {
     el.appendChild(b);
   });
   $('backBtn').disabled = stack.length <= 1;
+  updateChassisBox();
+}
+
+// Shows the chassis number of the open folder, if the Plates tab has one
+function updateChassisBox() {
+  const box = $('chassisBox');
+  const info = stack.length > 1 ? expiryMap[current().name] : null;
+  if (info && info.chassis) {
+    $('chassisText').textContent = info.chassis;
+    box.classList.add('show');
+  } else {
+    box.classList.remove('show');
+  }
+}
+
+async function copyChassis() {
+  const text = $('chassisText').textContent;
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+  }
+  $('chassisCopy').textContent = 'Copied!';
+  setTimeout(() => { $('chassisCopy').textContent = 'Copy chassis'; }, 1500);
 }
 
 function goInto(folder) { stack.push(folder); loadCurrent(); }
@@ -748,8 +801,9 @@ async function loadExpiryMap() {
   try {
     expiryMap = await runServer('getExpiryMap');
     applyExpiryTips();
+    updateChassisBox();
   } catch (e) {
-    // Dates are optional; the gallery still works without them
+    // Dates and chassis numbers are optional; the gallery still works without them
   }
 }
 
@@ -804,6 +858,7 @@ function doSearch() {
   const wrap = $('content');
   wrap.innerHTML = loaderHtml('Searching, please wait...');
   $('crumbs').innerHTML = '<span class="crumb current">Search: ' + esc(term) + '</span>';
+  $('chassisBox').classList.remove('show');
   $('backBtn').disabled = true;
   setStatus('');
 
@@ -1063,6 +1118,7 @@ setupTooltip();
 
 $('backBtn').onclick = goBack;
 $('reloadBtn').onclick = refreshCurrent;
+$('chassisCopy').onclick = copyChassis;
 $('closeBtn').onclick = closeViewer;
 $('viewerDownloadBtn').onclick = () => { if (viewerFile) downloadFile(viewerFile); };
 $('viewerPrintBtn').onclick = () => { if (viewerFile) printFile(viewerFile); };
