@@ -194,13 +194,12 @@ svg { display: block; }
 .icon-btn:hover { color: var(--primary); border-color: #bfdbfe; }
 .icon-btn svg { width: 16px; height: 16px; }
 
-/* Hover box with expiry dates on folder tiles */
-.tile[data-tip]:hover::after {
-  content: attr(data-tip);
-  position: absolute; left: 12px; top: calc(100% + 8px); z-index: 30;
+/* Floating expiry tooltip (follows the mouse) */
+#tip {
+  position: fixed; z-index: 200; display: none;
   background: #1e293b; color: #fff; font-size: 12px; line-height: 1.7;
   padding: 10px 12px; border-radius: 10px; white-space: pre;
-  box-shadow: var(--shadow); pointer-events: none;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25); pointer-events: none;
 }
 
 /* Search results */
@@ -708,6 +707,42 @@ function applyExpiryTips() {
   });
 }
 
+// One floating tooltip, placed next to the mouse so tiles never cover it
+let tipEl = null;
+
+function moveTip(e) {
+  const pad = 14;
+  let x = e.clientX + pad;
+  let y = e.clientY + pad;
+  const w = tipEl.offsetWidth;
+  const h = tipEl.offsetHeight;
+  if (x + w > window.innerWidth) x = e.clientX - w - pad;
+  if (y + h > window.innerHeight) y = e.clientY - h - pad;
+  tipEl.style.left = x + 'px';
+  tipEl.style.top = y + 'px';
+}
+
+function setupTooltip() {
+  tipEl = document.createElement('div');
+  tipEl.id = 'tip';
+  document.body.appendChild(tipEl);
+
+  document.addEventListener('mouseover', e => {
+    const t = e.target.closest ? e.target.closest('.tile[data-tip]') : null;
+    if (!t) {
+      tipEl.style.display = 'none';
+      return;
+    }
+    tipEl.textContent = t.dataset.tip;
+    tipEl.style.display = 'block';
+    moveTip(e);
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (tipEl.style.display === 'block') moveTip(e);
+  });
+}
+
 async function loadExpiryMap() {
   try {
     expiryMap = await runServer('getExpiryMap');
@@ -1020,7 +1055,7 @@ function closeViewer() {
 // ============================================================
 // EVENTS
 // ============================================================
-
+setupTooltip();
 $('backBtn').onclick = goBack;
 $('reloadBtn').onclick = refreshCurrent;
 $('closeBtn').onclick = closeViewer;
