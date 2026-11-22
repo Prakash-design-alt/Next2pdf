@@ -98,7 +98,7 @@ svg { display: block; }
 }
 .direct-link:hover { background: var(--primary-dark); }
 
-/* Notification bell */
+/* Bells and their panels */
 .notif-wrap { position: relative; }
 .bell {
   position: relative; width: 40px; height: 40px; border-radius: 10px;
@@ -107,6 +107,7 @@ svg { display: block; }
 }
 .bell:hover { background: var(--surface-2); }
 .bell svg { width: 20px; height: 20px; }
+.bell.warn { color: #b45309; }
 .bell-badge {
   position: absolute; top: -6px; right: -6px; display: none;
   min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
@@ -116,19 +117,40 @@ svg { display: block; }
 .bell-badge.show { display: flex; }
 .notif-panel {
   position: absolute; right: 0; top: 48px; width: 380px; max-width: 92vw;
-  max-height: 420px; overflow: auto; display: none; z-index: 60;
+  max-height: 440px; overflow: auto; display: none; z-index: 60;
   background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
   box-shadow: 0 14px 40px rgba(0,0,0,.18);
 }
+.notif-panel.wide { width: 440px; }
 .notif-panel.show { display: block; }
-.notif-head { padding: 12px 16px; font-weight: 700; border-bottom: 1px solid var(--border); }
+.notif-head {
+  padding: 12px 16px; font-weight: 700; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: var(--surface);
+}
 .notif-item { padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 13px; }
 .notif-item:last-child { border-bottom: none; }
 .notif-time { font-size: 12px; color: var(--muted); }
 .notif-change { font-weight: 600; margin-top: 2px; word-break: break-word; }
 .notif-name { word-break: break-word; }
 
-/* Ticker (moves right to left) */
+/* Expiring items */
+.exp-item {
+  display: grid; grid-template-columns: 1fr auto; gap: 2px 10px;
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  border-left: 4px solid transparent; font-size: 13px;
+}
+.exp-item:last-child { border-bottom: none; }
+.exp-item.expired { border-left-color: #dc2626; background: #fff5f5; }
+.exp-item.soon { border-left-color: #f59e0b; background: #fffbeb; }
+.exp-at { font-weight: 700; }
+.exp-date { font-weight: 600; text-align: right; white-space: nowrap; }
+.exp-doc { color: var(--muted); font-size: 12px; }
+.exp-state { font-size: 12px; text-align: right; white-space: nowrap; }
+.exp-item.expired .exp-state, .exp-item.expired .exp-date { color: #b91c1c; }
+.exp-item.soon .exp-state, .exp-item.soon .exp-date { color: #b45309; }
+.exp-legend { padding: 8px 16px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); }
+
+/* Ticker */
 .ticker {
   background: #eef4ff; color: #1d4ed8; font-size: 13px; font-weight: 600;
   overflow: hidden; white-space: nowrap; border-bottom: 1px solid var(--border);
@@ -362,6 +384,24 @@ svg { display: block; }
     </div>
 
     <div class="top-actions">
+      <!-- Expiring documents bell (⚠) -->
+      <div class="notif-wrap">
+        <button id="expBtn" class="bell warn" title="Expiring documents">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span id="expBadge" class="bell-badge"></span>
+        </button>
+        <div id="expPanel" class="notif-panel wide">
+          <div class="notif-head">Expiring documents (last 30 days and next 30 days)</div>
+          <div class="exp-legend"><span style="color:#b91c1c">● Red</span> = expired &nbsp; <span style="color:#b45309">● Amber</span> = expires within 30 days</div>
+          <div id="expList"></div>
+        </div>
+      </div>
+
+      <!-- Recent changes bell -->
       <div class="notif-wrap">
         <button id="bellBtn" class="bell" title="Recent changes">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -375,6 +415,7 @@ svg { display: block; }
           <div id="notifList"></div>
         </div>
       </div>
+
       <a class="direct-link" href="https://prakash-design-alt.github.io/Next2pdf/gallery.html" target="_blank" rel="noopener">Print directly - click here</a>
       <span id="userChip" class="user-chip"></span>
       <button id="logoutBtn" class="btn">Sign out</button>
@@ -484,6 +525,7 @@ let busyTimer = null;
 let searchTimer = null;
 let expiryMap = {};
 let notifItems = [];
+let expItems = [];
 const folderCache = new Map();
 
 function setStatus(t) { $('status').textContent = t; }
@@ -592,6 +634,7 @@ firebase.auth().onAuthStateChanged(user => {
     $('crumbs').innerHTML = '';
     $('chassisBox').classList.remove('show');
     $('notifPanel').classList.remove('show');
+    $('expPanel').classList.remove('show');
     setStatus('');
   }
 });
@@ -604,6 +647,7 @@ async function start() {
     loadCurrent();
     loadExpiryMap();
     loadChanges();
+    loadExpiring();
   } catch (e) {
     $('content').innerHTML = '';
     if (String(e.message).indexOf('Access denied') !== -1) {
@@ -616,7 +660,55 @@ async function start() {
 }
 
 // ============================================================
-// NOTIFICATION BELL (recent Drive changes, no names shown)
+// EXPIRING DOCUMENTS BELL (⚠)
+// Expired (red) and expiring within 30 days (amber).
+// ============================================================
+
+function describeDays(days) {
+  if (days < 0) return 'Expired ' + (-days) + ' day' + (-days === 1 ? '' : 's') + ' ago';
+  if (days === 0) return 'Expires today';
+  return 'Expires in ' + days + ' day' + (days === 1 ? '' : 's');
+}
+
+async function loadExpiring() {
+  try {
+    expItems = await runServer('getExpiringItems');
+  } catch (e) {
+    expItems = [];
+  }
+  renderExpiring();
+}
+
+function renderExpiring() {
+  const badge = $('expBadge');
+  badge.textContent = expItems.length > 99 ? '99+' : String(expItems.length);
+  badge.classList.toggle('show', expItems.length > 0);
+
+  const list = $('expList');
+  if (!expItems.length) {
+    list.innerHTML = '<div class="notif-item">No documents expired or expiring in the next 30 days.</div>';
+    return;
+  }
+  list.innerHTML = expItems.map(i =>
+    '<div class="exp-item ' + (i.status === 'expired' ? 'expired' : 'soon') + '">' +
+      '<div class="exp-at">' + esc(i.at) + '</div>' +
+      '<div class="exp-date">' + esc(i.date) + '</div>' +
+      '<div class="exp-doc">' + esc(i.doc) + '</div>' +
+      '<div class="exp-state">' + esc(describeDays(i.days)) + '</div>' +
+    '</div>'
+  ).join('');
+}
+
+async function toggleExpiring(e) {
+  e.stopPropagation();
+  $('notifPanel').classList.remove('show');
+  const panel = $('expPanel');
+  const open = panel.classList.toggle('show');
+  if (open) await loadExpiring();
+}
+
+// ============================================================
+// RECENT CHANGES BELL
 // The count shows changes not yet seen on this browser.
 // ============================================================
 
@@ -662,6 +754,7 @@ function markChangesSeen() {
 
 async function toggleNotifications(e) {
   e.stopPropagation();
+  $('expPanel').classList.remove('show');
   const panel = $('notifPanel');
   const open = panel.classList.toggle('show');
   if (open) {
@@ -670,9 +763,12 @@ async function toggleNotifications(e) {
   }
 }
 
-// Close the panel when clicking anywhere else
+// Close both panels when clicking anywhere else
 document.addEventListener('click', e => {
-  if (!e.target.closest('.notif-wrap')) $('notifPanel').classList.remove('show');
+  if (!e.target.closest('.notif-wrap')) {
+    $('notifPanel').classList.remove('show');
+    $('expPanel').classList.remove('show');
+  }
 });
 
 // ============================================================
@@ -853,7 +949,6 @@ function fileTile(f) {
 
 // ============================================================
 // EXPIRY DATES AND FLOATING TOOLTIP
-// Works on folder tiles and on folder rows in search results.
 // ============================================================
 
 function applyExpiryTips() {
@@ -1221,6 +1316,7 @@ function closeViewer() {
 
 setupTooltip();
 
+$('expBtn').addEventListener('click', toggleExpiring);
 $('bellBtn').addEventListener('click', toggleNotifications);
 $('backBtn').onclick = goBack;
 $('reloadBtn').onclick = refreshCurrent;
