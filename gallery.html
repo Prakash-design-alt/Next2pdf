@@ -335,6 +335,8 @@ svg { display: block; }
   position: fixed; left: 0; bottom: 0; width: 1px; height: 1px;
   border: 0; opacity: 0; pointer-events: none;
 }
+    .exp-item { cursor: pointer; }
+  .exp-item:hover { filter: brightness(0.97); }
 </style>
 </head>
 
@@ -690,7 +692,7 @@ function renderExpiring() {
     return;
   }
   list.innerHTML = expItems.map(i =>
-    '<div class="exp-item ' + (i.status === 'expired' ? 'expired' : 'soon') + '">' +
+    '<div class="exp-item ' + (i.status === 'expired' ? 'expired' : 'soon') + '" data-at="' + esc(i.at) + '">' +
       '<div class="exp-at">' + esc(i.at) + '</div>' +
       '<div class="exp-date">' + esc(i.date) + '</div>' +
       '<div class="exp-doc">' + esc(i.doc) + '</div>' +
@@ -1310,6 +1312,25 @@ function closeViewer() {
   viewerFile = null;
 }
 
+// Opens the folder for an AT number (for example "AT 381") from the expiring list
+async function openAtFolder(at) {
+  $('expPanel').classList.remove('show');
+  setStatus('Opening ' + at + '...');
+  try {
+    const res = await runServer('searchItems', at);
+    const hit = res.find(r => r.isFolder && r.name.trim().toLowerCase() === at.trim().toLowerCase());
+    if (!hit) {
+      setStatus('Folder ' + at + ' not found');
+      return;
+    }
+    $('searchInput').value = '';
+    stack = [{ id: rootId, name: 'Home' }].concat(hit.goto);
+    loadCurrent();
+  } catch (e) {
+    setStatus('Error: ' + e.message);
+  }
+}
+  
 // ============================================================
 // EVENTS
 // ============================================================
@@ -1317,6 +1338,10 @@ function closeViewer() {
 setupTooltip();
 
 $('expBtn').addEventListener('click', toggleExpiring);
+$('expList').addEventListener('click', e => {
+  const row = e.target.closest('.exp-item');
+  if (row) openAtFolder(row.dataset.at);
+});
 $('bellBtn').addEventListener('click', toggleNotifications);
 $('backBtn').onclick = goBack;
 $('reloadBtn').onclick = refreshCurrent;
