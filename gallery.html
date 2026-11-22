@@ -98,6 +98,21 @@ svg { display: block; }
 }
 .direct-link:hover { background: var(--primary-dark); }
 
+/* Scrolling notice (moves right to left) */
+.ticker {
+  background: #eef4ff; color: #1d4ed8; font-size: 13px; font-weight: 600;
+  overflow: hidden; white-space: nowrap; border-bottom: 1px solid var(--border);
+  padding: 7px 0;
+}
+.ticker-text {
+  display: inline-block; padding-left: 16px;
+  animation: ticker 30s linear infinite;
+}
+@keyframes ticker {
+  from { transform: translateX(100vw); }
+  to   { transform: translateX(-100%); }
+}
+
 /* Toolbar */
 .toolbar { display: flex; align-items: center; gap: 12px; padding: 14px 24px 6px; flex-wrap: wrap; }
 .crumbs { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; font-size: 14px; }
@@ -148,7 +163,10 @@ svg { display: block; }
   box-shadow: var(--shadow); transition: transform .12s, box-shadow .12s, border-color .12s;
   display: flex; flex-direction: column; gap: 14px; min-height: 130px;
 }
-.tile:hover { transform: translateY(-2px); border-color: #c7d2fe; box-shadow: 0 8px 22px rgba(37,99,235,.12); }
+.tile:hover {
+  transform: translateY(-2px); border-color: #c7d2fe; box-shadow: 0 8px 22px rgba(37,99,235,.12);
+  z-index: 30;
+}
 .tile-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .badge {
   width: 44px; height: 44px; border-radius: 12px;
@@ -175,6 +193,15 @@ svg { display: block; }
 }
 .icon-btn:hover { color: var(--primary); border-color: #bfdbfe; }
 .icon-btn svg { width: 16px; height: 16px; }
+
+/* Hover box with expiry dates on folder tiles */
+.tile[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute; left: 12px; top: calc(100% + 8px); z-index: 30;
+  background: #1e293b; color: #fff; font-size: 12px; line-height: 1.7;
+  padding: 10px 12px; border-radius: 10px; white-space: pre;
+  box-shadow: var(--shadow); pointer-events: none;
+}
 
 /* Search results */
 .result-list {
@@ -240,29 +267,6 @@ svg { display: block; }
   position: fixed; left: 0; bottom: 0; width: 1px; height: 1px;
   border: 0; opacity: 0; pointer-events: none;
 }
-  /* Scrolling notice: moves from right to left */
-  .ticker {
-    background: #eef4ff; color: #1d4ed8; font-size: 13px; font-weight: 600;
-    overflow: hidden; white-space: nowrap; border-bottom: 1px solid var(--border);
-    padding: 7px 0;
-  }
-  .ticker-text {
-    display: inline-block; padding-left: 16px;
-    animation: ticker 30s linear infinite;
-  }
-  @keyframes ticker {
-    from { transform: translateX(100vw); }
-    to   { transform: translateX(-100%); }
-  }
-    /* Hover box with expiry dates on folder tiles */
-  .tile[data-tip]:hover::after {
-    content: attr(data-tip);
-    position: absolute; left: 12px; top: calc(100% + 8px); z-index: 30;
-    background: #1e293b; color: #fff; font-size: 12px; line-height: 1.7;
-    padding: 10px 12px; border-radius: 10px; white-space: pre;
-    box-shadow: var(--shadow); pointer-events: none;
-  }
-  
 </style>
 </head>
 
@@ -317,7 +321,9 @@ svg { display: block; }
       <button id="logoutBtn" class="btn">Sign out</button>
     </div>
   </header>
+
   <div class="ticker"><span class="ticker-text">Search supports plate number, e.g. 3127 or ZSA 3127</span></div>
+
   <div class="toolbar">
     <button id="backBtn" class="btn" disabled>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -412,6 +418,7 @@ let started = false;
 let viewerFile = null;
 let busyTimer = null;
 let searchTimer = null;
+let expiryMap = {};
 const folderCache = new Map();
 
 function setStatus(t) { $('status').textContent = t; }
@@ -619,7 +626,6 @@ function render(res) {
     wrap.innerHTML = '<div class="empty">This folder is empty.</div>';
     setStatus('');
     return;
-    applyExpiryTips();
   }
 
   if (res.folders.length) {
@@ -638,13 +644,14 @@ function render(res) {
     wrap.appendChild(g);
   }
 
+  applyExpiryTips();
   setStatus(res.folders.length + ' folders, ' + res.files.length + ' files');
 }
 
 function folderTile(f) {
   const el = document.createElement('div');
   el.className = 'tile';
-    el.dataset.folder = f.name;
+  el.dataset.folder = f.name;
   el.innerHTML =
     '<div class="tile-top"><div class="badge folder">' + ICONS.folder + '</div></div>' +
     '<div class="tile-name">' + esc(f.name) + '</div>' +
@@ -684,6 +691,30 @@ function fileTile(f) {
 
   el.onclick = () => openItem(f);
   return el;
+}
+
+// ============================================================
+// EXPIRY DATES ON FOLDER HOVER
+// ============================================================
+
+function applyExpiryTips() {
+  document.querySelectorAll('.tile[data-folder]').forEach(el => {
+    const i = expiryMap[el.dataset.folder];
+    if (!i) return;
+    el.dataset.tip =
+      'Registration expire: ' + (i.reg || '-') + '\n' +
+      'Insurance expire: ' + (i.ins || '-') + '\n' +
+      'MVPI expire: ' + (i.mvpi || '-');
+  });
+}
+
+async function loadExpiryMap() {
+  try {
+    expiryMap = await runServer('getExpiryMap');
+    applyExpiryTips();
+  } catch (e) {
+    // Dates are optional; the gallery still works without them
+  }
 }
 
 // ============================================================
@@ -985,31 +1016,7 @@ function closeViewer() {
   $('viewerImg').src = '';
   viewerFile = null;
 }
-// ============================================================
-// EXPIRY DATES ON FOLDER HOVER
-// ============================================================
 
-let expiryMap = {};
-
-function applyExpiryTips() {
-  document.querySelectorAll('.tile[data-folder]').forEach(el => {
-    const i = expiryMap[el.dataset.folder];
-    if (!i) return;
-    el.dataset.tip =
-      'Registration expire: ' + (i.reg || '-') + '\n' +
-      'Insurance expire: ' + (i.ins || '-') + '\n' +
-      'MVPI expire: ' + (i.mvpi || '-');
-  });
-}
-
-async function loadExpiryMap() {
-  try {
-    expiryMap = await runServer('getExpiryMap');
-    applyExpiryTips();
-  } catch (e) {
-    // Dates are optional; the gallery still works without them
-  }
-}
 // ============================================================
 // EVENTS
 // ============================================================
