@@ -354,7 +354,7 @@ svg { display: block; }
   .notif-head { font-size: 14px; }
   .exp-item { padding: 12px 14px; }
 }
-  
+  .tile-plate { color: #7c3aed; font-weight: 700; white-space: nowrap; margin-left: 10px; }
 </style>
 </head>
 
@@ -928,7 +928,7 @@ function folderTile(f) {
   el.dataset.folder = f.name;
   el.innerHTML =
     '<div class="tile-top"><div class="badge folder">' + ICONS.folder + '</div></div>' +
-    '<div class="tile-name">' + esc(f.name) + '</div>' +
+    '<div class="tile-name">' + esc(f.name) + '<span class="tile-plate"></span></div>' +
     '<div class="tile-meta">Folder</div>';
   el.onclick = () => goInto({ id: f.id, name: f.name });
   return el;
@@ -975,6 +975,10 @@ function applyExpiryTips() {
   document.querySelectorAll('[data-folder]').forEach(el => {
     const i = expiryMap[el.dataset.folder];
     if (!i) return;
+
+    const plateEl = el.querySelector('.tile-plate');
+    if (plateEl) plateEl.textContent = i.plate || '';
+
     el.dataset.tip =
       'Registration expire: ' + (i.reg || '-') + '\n' +
       'Insurance expire: ' + (i.ins || '-') + '\n' +
