@@ -98,7 +98,7 @@ svg { display: block; }
 }
 .direct-link:hover { background: var(--primary-dark); }
 
-/* Bells and their panels */
+/* Bells and panels */
 .notif-wrap { position: relative; }
 .bell {
   position: relative; width: 40px; height: 40px; border-radius: 10px;
@@ -179,7 +179,7 @@ svg { display: block; }
 .crumb-sep { color: #cbd5e1; }
 .status { margin-left: auto; font-size: 13px; color: var(--muted); }
 
-/* Chassis box */
+/* Chassis and plate boxes */
 .chassis-box {
   display: none; align-items: center; gap: 8px; padding: 6px 10px;
   border: 1px solid #bfdbfe; background: #eff6ff; border-radius: 10px; font-size: 13px;
@@ -195,16 +195,12 @@ svg { display: block; }
   background: var(--primary); color: #fff; white-space: nowrap;
 }
 .chassis-copy:hover { background: var(--primary-dark); }
-
-/* Plate box */
 .plate-box {
   display: none; align-items: center; padding: 6px 10px;
   border: 1px solid #ddd6fe; background: #f5f3ff; border-radius: 10px;
   font-size: 13px; font-weight: 600; color: #7c3aed; white-space: nowrap;
 }
 .plate-box.show { display: inline-flex; }
-
-/* Plate shown beside folder names (faded) */
 .tile-plate {
   color: #a78bfa; font-weight: 500; font-size: 12px; white-space: nowrap;
   margin-left: 8px; opacity: 0.75;
@@ -332,6 +328,103 @@ svg { display: block; }
   max-width: 100%; max-height: 100%; border-radius: 6px; box-shadow: 0 6px 24px rgba(0,0,0,.25);
 }
 
+/* Drive Group Chat button */
+.chat-fab {
+  position: relative; display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px 8px 10px; border: none; border-radius: 12px; color: #fff;
+  font-weight: 600; font-size: 14px; white-space: nowrap;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  box-shadow: 0 6px 18px rgba(124,58,237,.35);
+  transition: transform .15s, box-shadow .15s;
+}
+.chat-fab:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(124,58,237,.45); }
+.chat-fab::before {
+  content: ''; position: absolute; inset: -4px; border-radius: 16px;
+  border: 2px solid rgba(124,58,237,.5); pointer-events: none;
+  animation: chatRing 2.2s ease-out infinite;
+}
+.chat-fab-ico { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; }
+.chat-fab-ico svg { width: 22px; height: 22px; animation: chatBob 2.4s ease-in-out infinite; }
+.chat-fab-ico .dot { animation: chatDot 1.2s ease-in-out infinite; }
+.chat-fab-ico .d2 { animation-delay: .15s; }
+.chat-fab-ico .d3 { animation-delay: .3s; }
+.chat-badge {
+  position: absolute; top: -6px; right: -6px; display: none;
+  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+  background: #22c55e; color: #fff; font-size: 11px; font-weight: 700;
+  align-items: center; justify-content: center; box-shadow: 0 0 0 2px #fff;
+  animation: chatPop .4s ease;
+}
+.chat-badge.show { display: flex; }
+@keyframes chatBob { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-3px) rotate(-6deg); } }
+@keyframes chatDot { 0%,100% { opacity: .25; } 50% { opacity: 1; } }
+@keyframes chatRing { 0% { opacity: .9; transform: scale(.92); } 100% { opacity: 0; transform: scale(1.25); } }
+@keyframes chatPop { 0% { transform: scale(.4); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
+/* Drive Group Chat panel */
+.chat-panel {
+  position: fixed; right: 20px; bottom: 20px; width: 360px; height: 520px; z-index: 150;
+  display: none; flex-direction: column; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 18px 50px rgba(15,23,42,.25);
+  overflow: hidden;
+}
+.chat-panel.show { display: flex; animation: chatOpen .25s ease; }
+@keyframes chatOpen { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+.chat-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; font-weight: 700; color: #fff;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+}
+.chat-title { display: flex; align-items: center; gap: 8px; }
+.live-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #22c55e;
+  animation: livePulse 1.6s infinite;
+}
+@keyframes livePulse {
+  0% { box-shadow: 0 0 0 0 rgba(34,197,94,.7); }
+  70% { box-shadow: 0 0 0 7px rgba(34,197,94,0); }
+  100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+.chat-x { border: none; background: none; color: #fff; font-size: 22px; line-height: 1; padding: 0 4px; }
+.chat-list { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: #f8fafc; }
+.chat-empty { text-align: center; color: var(--muted); font-size: 13px; margin: auto; }
+.chat-msg {
+  align-self: flex-start; max-width: 85%; background: #fff;
+  border: 1px solid var(--border); border-radius: 12px 12px 12px 4px; padding: 8px 10px;
+  animation: chatIn .2s ease;
+}
+.chat-msg.mine { align-self: flex-end; background: #eff6ff; border-color: #bfdbfe; border-radius: 12px 12px 4px 12px; }
+@keyframes chatIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.chat-meta { font-size: 11px; color: var(--muted); margin-bottom: 3px; word-break: break-all; }
+.chat-text { font-size: 14px; white-space: pre-wrap; word-break: break-word; }
+.chat-text.big { font-size: 40px; line-height: 1.2; }
+.chat-file {
+  display: flex; align-items: center; gap: 10px; margin-top: 6px; width: 100%;
+  padding: 8px 10px; border: 1px dashed #c7d2fe; border-radius: 10px; background: #f5f3ff; text-align: left;
+}
+.chat-file:hover { background: #ede9fe; }
+.chat-file-ico { font-size: 22px; }
+.chat-file-txt { display: flex; flex-direction: column; min-width: 0; }
+.chat-file-txt b { font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+.chat-file-txt small { font-size: 11px; color: var(--muted); }
+.emoji-bar {
+  display: none; flex-wrap: wrap; gap: 4px; padding: 8px 10px; border-top: 1px solid var(--border); background: #fff;
+}
+.emoji-bar.show { display: flex; }
+.emo { border: none; background: none; font-size: 20px; padding: 4px; border-radius: 8px; transition: transform .12s, background .12s; }
+.emo:hover { background: #f1f5f9; transform: scale(1.2); }
+.chat-input-row { display: flex; align-items: center; gap: 6px; padding: 10px; border-top: 1px solid var(--border); }
+.chat-tool {
+  border: none; background: #f1f5f9; border-radius: 10px; width: 36px; height: 36px; font-size: 18px;
+}
+.chat-tool:hover { background: #e2e8f0; }
+.chat-tool:disabled, #chatSend:disabled { opacity: .5; cursor: default; }
+.chat-input-row input {
+  flex: 1; min-width: 0; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface-2); outline: none;
+}
+.chat-input-row input:focus { border-color: var(--primary); background: #fff; }
+
 /* Print frame */
 #printFrame {
   position: fixed; left: 0; bottom: 0; width: 1px; height: 1px;
@@ -353,6 +446,9 @@ svg { display: block; }
   }
   .notif-head { font-size: 14px; }
   .exp-item { padding: 12px 14px; }
+  .chat-fab-label { display: none; }
+  .chat-fab { padding: 8px; }
+  .chat-panel { left: 8px; right: 8px; bottom: 8px; width: auto; height: 70vh; }
 }
 </style>
 </head>
@@ -403,6 +499,20 @@ svg { display: block; }
     </div>
 
     <div class="top-actions">
+      <!-- Drive Group Chat button -->
+      <button id="chatBtn" class="chat-fab" title="Drive Group Chat">
+        <span class="chat-fab-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5z"/>
+            <circle class="dot d1" cx="8.5" cy="11.5" r="1.1" fill="currentColor"/>
+            <circle class="dot d2" cx="12" cy="11.5" r="1.1" fill="currentColor"/>
+            <circle class="dot d3" cx="15.5" cy="11.5" r="1.1" fill="currentColor"/>
+          </svg>
+        </span>
+        <span class="chat-fab-label">Group Chat</span>
+        <span id="chatBadge" class="chat-badge"></span>
+      </button>
+
       <!-- Expiring documents bell -->
       <div class="notif-wrap">
         <button id="expBtn" class="bell warn" title="Expiring documents">
@@ -491,6 +601,23 @@ svg { display: block; }
   </div>
 </div>
 
+<!-- DRIVE GROUP CHAT PANEL -->
+<div id="chatPanel" class="chat-panel">
+  <div class="chat-head">
+    <span class="chat-title"><span class="live-dot"></span> Drive Group Chat</span>
+    <button id="chatClose" class="chat-x" title="Close">×</button>
+  </div>
+  <div id="chatList" class="chat-list"></div>
+  <div id="chatEmojiBar" class="emoji-bar"></div>
+  <div class="chat-input-row">
+    <button id="chatEmojiBtn" class="chat-tool" title="Emoji">😊</button>
+    <button id="chatAttach" class="chat-tool" title="Send a file (max 5 MB)">📎</button>
+    <input id="chatInput" type="text" placeholder="Type a message..." maxlength="1000">
+    <button id="chatSend" class="btn primary">Send</button>
+  </div>
+  <input id="chatFile" type="file" hidden>
+</div>
+
 <!-- BUSY OVERLAY -->
 <div id="busy">
   <div class="busy-card">
@@ -553,13 +680,20 @@ let notifItems = [];
 let expItems = [];
 let rootFoldersPromise = null;
 let tipEl = null;
+let chatTimer = null;
+let chatMsgs = [];
 const folderCache = new Map();
+
+const EMOJIS = ['😀','😂','😍','😎','👍','🙏','❤️','🔥','✅','🎉','🚗','📄','📎','⚠️','👏','😊'];
+const CHAT_SEEN_KEY = 'chatSeen';
+const BIG_EMOJI = /^(\p{Extended_Pictographic}|\uFE0F|\u200D|\s){1,12}$/u;
 
 function setStatus(t) { $('status').textContent = t; }
 function current() { return stack[stack.length - 1]; }
 function esc(v) {
   return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
+function ea(v) { return esc(v).replace(/"/g, '&quot;'); }
 function loaderHtml(message) {
   return '<div class="loader"><div class="spinner"></div><div>' + esc(message) + '</div></div>';
 }
@@ -664,6 +798,7 @@ firebase.auth().onAuthStateChanged(user => {
     $('plateBox').classList.remove('show');
     $('notifPanel').classList.remove('show');
     $('expPanel').classList.remove('show');
+    closeChat();
     setStatus('');
   }
 });
@@ -677,6 +812,7 @@ async function start() {
     loadExpiryMap();
     loadChanges();
     loadExpiring();
+    pollChat(false);
   } catch (e) {
     $('content').innerHTML = '';
     if (String(e.message).indexOf('Access denied') !== -1) {
@@ -689,7 +825,7 @@ async function start() {
 }
 
 // ============================================================
-// EXPIRY MAP (plate, dates, operation card and chassis per folder)
+// EXPIRY MAP (plate, dates, operation card, chassis per folder)
 // ============================================================
 
 async function loadExpiryMap() {
@@ -698,7 +834,7 @@ async function loadExpiryMap() {
     applyExpiryTips();
     updateChassisBox();
   } catch (e) {
-    // Plates, dates and chassis are optional; the gallery still works without them
+    // Optional data; the gallery still works without it
   }
 }
 
@@ -737,7 +873,7 @@ function renderExpiring() {
     return;
   }
   list.innerHTML = expItems.map(i =>
-    '<div class="exp-item ' + (i.status === 'expired' ? 'expired' : 'soon') + '" data-at="' + esc(i.at) + '">' +
+    '<div class="exp-item ' + (i.status === 'expired' ? 'expired' : 'soon') + '" data-at="' + ea(i.at) + '">' +
       '<div class="exp-at">' + esc(i.at) + '</div>' +
       '<div class="exp-date">' + esc(i.date) + '</div>' +
       '<div class="exp-doc">' + esc(i.doc) + '</div>' +
@@ -807,7 +943,7 @@ async function toggleNotifications(e) {
   }
 }
 
-// Close both panels when clicking anywhere outside them
+// Close both panels when clicking outside them
 document.addEventListener('click', e => {
   if (!e.target.closest('.notif-wrap')) {
     $('notifPanel').classList.remove('show');
@@ -842,7 +978,7 @@ function renderCrumbs() {
   updateChassisBox();
 }
 
-// Shows the chassis and plate of the open folder, when the Plates tab has them
+// Shows the chassis and plate of the open folder
 function updateChassisBox() {
   const info = stack.length > 1 && current() ? expiryMap[current().name] : null;
 
@@ -1003,7 +1139,6 @@ function fileTile(f) {
 // PLATE AND EXPIRY TOOLTIPS
 // ============================================================
 
-// Hover text for a folder's dates, including the operation card
 function expiryTipText(i) {
   return 'Registration expire: ' + (i.reg || '-') + '\n' +
          'Insurance expire: ' + (i.ins || '-') + '\n' +
@@ -1012,18 +1147,16 @@ function expiryTipText(i) {
 }
 
 function applyExpiryTips() {
-  // Folder tiles and search rows: show plate and dates
+  // Folder tiles and search rows: plate and dates
   document.querySelectorAll('[data-folder]').forEach(el => {
     const i = expiryMap[el.dataset.folder];
     if (!i) return;
-
     const plateEl = el.querySelector('.tile-plate');
     if (plateEl) plateEl.textContent = i.plate || '';
-
     el.dataset.tip = expiryTipText(i);
   });
 
-  // File tiles: show the dates of the folder they are in
+  // File tiles: dates of the folder they are in
   document.querySelectorAll('[data-parent]').forEach(el => {
     const i = expiryMap[el.dataset.parent];
     if (i) el.dataset.tip = expiryTipText(i);
@@ -1064,13 +1197,12 @@ function setupTooltip() {
 }
 
 // ============================================================
-// FAST FOLDER SEARCH (runs in the browser, exact matches only)
+// FAST FOLDER SEARCH (in the browser, exact matches only)
 // ============================================================
 
-// Keeps only letters and digits in lower case, so "AT 1047", "at-1047" and "at1047" match
+// Letters and digits only, lower case: "AT 1047", "at-1047" and "at1047" match
 const normKey = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
-// Home folder list, loaded once (from memory when possible)
 async function getRootFolders() {
   const cached = folderCache.get(rootId);
   if (cached) return cached.folders;
@@ -1091,12 +1223,11 @@ async function getRootFolders() {
   return rootFoldersPromise;
 }
 
-// Exact matches only: AT number, plate, or chassis
 function findFolders(term, folders) {
   const key = normKey(term);
   if (!key) return [];
 
-  // "1047", "at1047" or "AT 1047" all mean AT 1047 (not AT 10 or AT 104)
+  // "1047", "at1047" and "AT 1047" all mean AT 1047 (not AT 10 or AT 104)
   const numMatch = key.match(/^(?:at)?0*(\d+)$/);
   const wantNum = numMatch ? Number(numMatch[1]) : null;
 
@@ -1116,7 +1247,7 @@ function findFolders(term, folders) {
     if (name === key || (wantNum !== null && Number(m[1]) === wantNum)) add(f, 'AT');
   });
 
-  // 2. Plate and chassis (from the Plates tab)
+  // 2. Plate and chassis
   folders.forEach(f => {
     const info = expiryMap[f.name];
     if (!info) return;
@@ -1151,7 +1282,6 @@ function folderResultRow(f, why) {
   return el;
 }
 
-// Opens a folder directly (from search or the expiring list)
 function openFolder(f) {
   searchSeq++;
   clearTimeout(searchTimer);
@@ -1202,7 +1332,6 @@ async function doSearch() {
   }
 }
 
-// Opens the folder for an AT number from the expiring list
 async function openAtFolder(at) {
   $('expPanel').classList.remove('show');
   setStatus('Opening ' + at + '...');
@@ -1240,8 +1369,7 @@ async function downloadFile(f) {
 
 // ============================================================
 // PRINT
-// PDFs print from the original file (browser PDF viewer).
-// Photos print as one sheet each, sized to fit the page.
+// PDFs print from the original file. Photos print one per sheet.
 // ============================================================
 
 async function printFile(f) {
@@ -1433,10 +1561,182 @@ function closeViewer() {
 }
 
 // ============================================================
+// DRIVE GROUP CHAT
+// ============================================================
+
+function myEmail() {
+  const u = firebase.auth().currentUser;
+  return u && u.email ? u.email.toLowerCase() : '';
+}
+
+function fmtSize(b) {
+  if (!b) return '';
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+  return (b / 1048576).toFixed(1) + ' MB';
+}
+
+function chatSeenMs() {
+  return Number(localStorage.getItem(CHAT_SEEN_KEY) || 0);
+}
+
+function buildEmojiBar() {
+  $('chatEmojiBar').innerHTML = EMOJIS.map(e => '<button type="button" class="emo">' + e + '</button>').join('');
+}
+
+function insertAtCursor(text) {
+  const input = $('chatInput');
+  const start = input.selectionStart != null ? input.selectionStart : input.value.length;
+  const end = input.selectionEnd != null ? input.selectionEnd : input.value.length;
+  input.value = input.value.slice(0, start) + text + input.value.slice(end);
+  input.focus();
+  input.setSelectionRange(start + text.length, start + text.length);
+}
+
+function fileChipHtml(m) {
+  const icon = m.mime.indexOf('image/') === 0 ? '🖼️' : (m.mime === 'application/pdf' ? '📄' : '📁');
+  return '<button class="chat-file" data-id="' + ea(m.fileId) + '" data-name="' + ea(m.fileName) +
+    '" data-mime="' + ea(m.mime) + '">' +
+    '<span class="chat-file-ico">' + icon + '</span>' +
+    '<span class="chat-file-txt"><b>' + esc(m.fileName) + '</b>' +
+    '<small>' + esc(fmtSize(m.size)) + ' · tap to open</small></span>' +
+    '</button>';
+}
+
+function renderChat(scrollToEnd) {
+  const list = $('chatList');
+  const nearBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 60;
+
+  if (!chatMsgs.length) {
+    list.innerHTML = '<div class="chat-empty">👋 No messages yet. Say hello to the team!</div>';
+    return;
+  }
+
+  const me = myEmail();
+  list.innerHTML = chatMsgs.map(m => {
+    const mine = m.who.toLowerCase() === me;
+    const parts = [];
+    if (m.text) {
+      const big = BIG_EMOJI.test(m.text) ? ' big' : '';
+      parts.push('<div class="chat-text' + big + '">' + esc(m.text) + '</div>');
+    }
+    if (m.fileId) parts.push(fileChipHtml(m));
+    return '<div class="chat-msg' + (mine ? ' mine' : '') + '">' +
+      '<div class="chat-meta">' + esc(m.who.split('@')[0]) + ' · ' + esc(m.time) + '</div>' +
+      parts.join('') +
+    '</div>';
+  }).join('');
+
+  if (scrollToEnd || nearBottom) list.scrollTop = list.scrollHeight;
+}
+
+function updateChatBadge() {
+  const open = $('chatPanel').classList.contains('show');
+  const newest = chatMsgs.reduce((mx, m) => Math.max(mx, m.ms), 0);
+
+  // First visit on this browser: existing messages count as read
+  if (!localStorage.getItem(CHAT_SEEN_KEY) && newest) {
+    localStorage.setItem(CHAT_SEEN_KEY, String(newest));
+  }
+  if (open && newest) localStorage.setItem(CHAT_SEEN_KEY, String(newest));
+
+  const me = myEmail();
+  const seen = chatSeenMs();
+  const unread = open ? 0 : chatMsgs.filter(m => m.ms > seen && m.who.toLowerCase() !== me).length;
+
+  const b = $('chatBadge');
+  b.textContent = unread > 9 ? '9+' : String(unread);
+  b.classList.toggle('show', unread > 0);
+}
+
+async function pollChat(scrollToEnd) {
+  try {
+    chatMsgs = await runServer('getChatMessages');
+    renderChat(scrollToEnd);
+    updateChatBadge();
+  } catch (e) {
+    // Try again on the next check
+  }
+}
+
+function openChat() {
+  $('chatPanel').classList.add('show');
+  pollChat(true);
+  clearInterval(chatTimer);
+  chatTimer = setInterval(() => pollChat(false), 5000);
+  $('chatInput').focus();
+}
+
+function closeChat() {
+  $('chatPanel').classList.remove('show');
+  $('chatEmojiBar').classList.remove('show');
+  clearInterval(chatTimer);
+  chatTimer = null;
+  updateChatBadge();
+}
+
+function toggleChat() {
+  if ($('chatPanel').classList.contains('show')) closeChat();
+  else openChat();
+}
+
+function setChatBusy(on, message) {
+  $('chatSend').disabled = on;
+  $('chatAttach').disabled = on;
+  $('chatInput').placeholder = on ? message : 'Type a message...';
+}
+
+function readAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+    reader.onerror = () => reject(new Error('Could not read the file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function sendChat() {
+  const input = $('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  try {
+    await runServer('sendChatMessage', text);
+    await pollChat(true);
+  } catch (e) {
+    input.value = text;
+    alert('Message not sent: ' + e.message);
+  }
+}
+
+async function sendChatFile(file) {
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    alert('This file is larger than 5 MB.');
+    return;
+  }
+
+  const caption = $('chatInput').value.trim();
+  setChatBusy(true, 'Uploading ' + file.name + '...');
+  try {
+    const b64 = await readAsBase64(file);
+    await runServer('sendChatFile', file.name, file.type || 'application/octet-stream', b64, caption);
+    $('chatInput').value = '';
+    await pollChat(true);
+  } catch (e) {
+    alert('File not sent: ' + e.message);
+  } finally {
+    setChatBusy(false);
+  }
+}
+
+// ============================================================
 // EVENTS
 // ============================================================
 
 setupTooltip();
+buildEmojiBar();
 
 $('expBtn').addEventListener('click', toggleExpiring);
 $('bellBtn').addEventListener('click', toggleNotifications);
@@ -1457,15 +1757,47 @@ $('viewer').addEventListener('click', e => {
   if (e.target.classList.contains('viewer-body')) closeViewer();
 });
 
-// Search: Enter runs it now; typing runs it 250 ms after you stop
+// Search: Enter runs now; typing runs 250 ms after you stop
 $('searchInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') { clearTimeout(searchTimer); doSearch(); }
 });
-
 $('searchInput').addEventListener('input', () => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(doSearch, 250);
 });
+
+// Chat
+$('chatBtn').addEventListener('click', toggleChat);
+$('chatClose').onclick = closeChat;
+$('chatSend').onclick = sendChat;
+$('chatInput').addEventListener('keydown', e => { if (e.key === 'Enter') sendChat(); });
+$('chatEmojiBtn').onclick = () => $('chatEmojiBar').classList.toggle('show');
+$('chatEmojiBar').addEventListener('click', e => {
+  const b = e.target.closest('.emo');
+  if (b) insertAtCursor(b.textContent);
+});
+$('chatAttach').onclick = () => $('chatFile').click();
+$('chatFile').addEventListener('change', e => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  sendChatFile(file);
+});
+$('chatList').addEventListener('click', e => {
+  const b = e.target.closest('.chat-file');
+  if (!b) return;
+  const f = { id: b.dataset.id, name: b.dataset.name, mime: b.dataset.mime };
+  if (f.mime === 'application/pdf' || f.mime.indexOf('image/') === 0) {
+    closeChat();
+    openItem(f);
+  } else {
+    downloadFile(f);
+  }
+});
+
+// Keep the chat badge fresh while the panel is closed
+setInterval(() => {
+  if (!$('chatPanel').classList.contains('show')) pollChat(false);
+}, 20000);
 </script>
 </body>
 </html>
