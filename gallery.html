@@ -450,6 +450,9 @@ svg { display: block; }
   .chat-fab { padding: 8px; }
   .chat-panel { left: 8px; right: 8px; bottom: 8px; width: auto; height: 70vh; }
 }
+/* Read receipts */
+.chat-seen { font-size: 11px; color: var(--muted); margin-top: 4px; text-align: right; }
+  
 </style>
 </head>
 
@@ -682,6 +685,7 @@ let rootFoldersPromise = null;
 let tipEl = null;
 let chatTimer = null;
 let chatMsgs = [];
+let chatReads = {};
 const folderCache = new Map();
 
 const EMOJIS = ['😀','😂','😍','😎','👍','🙏','❤️','🔥','✅','🎉','🚗','📄','📎','⚠️','👏','😊'];
@@ -1602,7 +1606,18 @@ function fileChipHtml(m) {
     '<small>' + esc(fmtSize(m.size)) + ' · tap to open</small></span>' +
     '</button>';
 }
+// "Seen by Gulraiz, Afzal" for a message; "Sent" for your own message nobody has read yet
+function seenByText(m) {
+  const me = myEmail();
+  const sender = m.who.toLowerCase();
+  const readers = Object.keys(chatReads)
+    .filter(e => e !== sender && chatReads[e] >= m.ms)
+    .map(e => e.split('@')[0]);
 
+  if (!readers.length) return sender === me ? 'Sent' : '';
+  return '👁 Seen by ' + readers.join(', ');
+}
+  
 function renderChat(scrollToEnd) {
   const list = $('chatList');
   const nearBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 60;
@@ -1616,11 +1631,16 @@ function renderChat(scrollToEnd) {
   list.innerHTML = chatMsgs.map(m => {
     const mine = m.who.toLowerCase() === me;
     const parts = [];
+
     if (m.text) {
       const big = BIG_EMOJI.test(m.text) ? ' big' : '';
       parts.push('<div class="chat-text' + big + '">' + esc(m.text) + '</div>');
     }
     if (m.fileId) parts.push(fileChipHtml(m));
+
+    const seen = seenByText(m);
+    if (seen) parts.push('<div class="chat-seen">' + esc(seen) + '</div>');
+
     return '<div class="chat-msg' + (mine ? ' mine' : '') + '">' +
       '<div class="chat-meta">' + esc(m.who.split('@')[0]) + ' · ' + esc(m.time) + '</div>' +
       parts.join('') +
@@ -1629,7 +1649,6 @@ function renderChat(scrollToEnd) {
 
   if (scrollToEnd || nearBottom) list.scrollTop = list.scrollHeight;
 }
-
 function updateChatBadge() {
   const open = $('chatPanel').classList.contains('show');
   const newest = chatMsgs.reduce((mx, m) => Math.max(mx, m.ms), 0);
@@ -1651,14 +1670,21 @@ function updateChatBadge() {
 
 async function pollChat(scrollToEnd) {
   try {
-    chatMsgs = await runServer('getChatMessages');
+    const st = await runServer('getChatState');
+    chatMsgs = st.messages || [];
+    chatReads = st.reads || {};
+
+    // While the panel is open, record that this user has read the chat
+    if ($('chatPanel').classList.contains('show')) {
+      runServer('markChatRead').catch(() => {});
+    }
+
     renderChat(scrollToEnd);
     updateChatBadge();
   } catch (e) {
     // Try again on the next check
   }
 }
-
 function openChat() {
   $('chatPanel').classList.add('show');
   pollChat(true);
