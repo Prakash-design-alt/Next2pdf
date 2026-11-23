@@ -969,6 +969,7 @@ function fileTile(f) {
   const isPdf = f.mime === 'application/pdf';
   const el = document.createElement('div');
   el.className = 'tile';
+  if (stack.length > 1) el.dataset.parent = current().name;
   el.innerHTML =
     '<div class="tile-top"><div class="badge ' + (isPdf ? 'pdf' : 'img') + '">' +
     (isPdf ? ICONS.pdf : ICONS.img) + '</div></div>' +
@@ -998,10 +999,18 @@ function fileTile(f) {
   return el;
 }
 
+// Builds the hover text for a folder's dates (used for folders and files inside it)
+function expiryTipText(i) {
+  return 'Registration expire: ' + (i.reg || '-') + '\n' +
+         'Insurance expire: ' + (i.ins || '-') + '\n' +
+         'MVPI expire: ' + (i.mvpi || '-') + '\n' +
+         'Operation card expire: ' + (i.opcard || '-');
+}
+  
 // ============================================================
 // PLATE AND EXPIRY TOOLTIPS
 // ============================================================
-
+  
 function applyExpiryTips() {
   document.querySelectorAll('[data-folder]').forEach(el => {
     const i = expiryMap[el.dataset.folder];
@@ -1010,13 +1019,15 @@ function applyExpiryTips() {
     const plateEl = el.querySelector('.tile-plate');
     if (plateEl) plateEl.textContent = i.plate || '';
 
-    el.dataset.tip =
-      'Registration expire: ' + (i.reg || '-') + '\n' +
-      'Insurance expire: ' + (i.ins || '-') + '\n' +
-      'MVPI expire: ' + (i.mvpi || '-');
+    el.dataset.tip = expiryTipText(i);
+  });
+
+  // Files inside a folder show that folder's dates
+  document.querySelectorAll('[data-parent]').forEach(el => {
+    const i = expiryMap[el.dataset.parent];
+    if (i) el.dataset.tip = expiryTipText(i);
   });
 }
-
 function moveTip(e) {
   const pad = 14;
   let x = e.clientX + pad;
