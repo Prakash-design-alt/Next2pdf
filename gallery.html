@@ -689,7 +689,7 @@ async function start() {
 }
 
 // ============================================================
-// EXPIRY MAP (plate, dates and chassis for each folder)
+// EXPIRY MAP (plate, dates, operation card and chassis per folder)
 // ============================================================
 
 async function loadExpiryMap() {
@@ -999,19 +999,20 @@ function fileTile(f) {
   return el;
 }
 
-// Builds the hover text for a folder's dates (used for folders and files inside it)
+// ============================================================
+// PLATE AND EXPIRY TOOLTIPS
+// ============================================================
+
+// Hover text for a folder's dates, including the operation card
 function expiryTipText(i) {
   return 'Registration expire: ' + (i.reg || '-') + '\n' +
          'Insurance expire: ' + (i.ins || '-') + '\n' +
          'MVPI expire: ' + (i.mvpi || '-') + '\n' +
          'Operation card expire: ' + (i.opcard || '-');
 }
-  
-// ============================================================
-// PLATE AND EXPIRY TOOLTIPS
-// ============================================================
-  
+
 function applyExpiryTips() {
+  // Folder tiles and search rows: show plate and dates
   document.querySelectorAll('[data-folder]').forEach(el => {
     const i = expiryMap[el.dataset.folder];
     if (!i) return;
@@ -1022,12 +1023,13 @@ function applyExpiryTips() {
     el.dataset.tip = expiryTipText(i);
   });
 
-  // Files inside a folder show that folder's dates
+  // File tiles: show the dates of the folder they are in
   document.querySelectorAll('[data-parent]').forEach(el => {
     const i = expiryMap[el.dataset.parent];
     if (i) el.dataset.tip = expiryTipText(i);
   });
 }
+
 function moveTip(e) {
   const pad = 14;
   let x = e.clientX + pad;
@@ -1079,7 +1081,7 @@ async function getRootFolders() {
       try {
         res = await runServer('listFolder', rootId);
       } catch (e) {
-        await new Promise(r => setTimeout(r, 1500)); // retry once after a short wait
+        await new Promise(r => setTimeout(r, 1500));
         res = await runServer('listFolder', rootId);
       }
       folderCache.set(rootId, res);
@@ -1094,7 +1096,7 @@ function findFolders(term, folders) {
   const key = normKey(term);
   if (!key) return [];
 
-  // A plain number such as "1047" or "at1047" means AT 1047 (not AT 10 or AT 104)
+  // "1047", "at1047" or "AT 1047" all mean AT 1047 (not AT 10 or AT 104)
   const numMatch = key.match(/^(?:at)?0*(\d+)$/);
   const wantNum = numMatch ? Number(numMatch[1]) : null;
 
@@ -1121,7 +1123,6 @@ function findFolders(term, folders) {
 
     if (info.plate) {
       const plates = info.plate.split(/[,;\n\/]/).map(normKey).filter(Boolean);
-      // Full plate ("zsa3127") or only its number ("3127")
       if (plates.some(p => p === key || p.replace(/^[a-z]+/, '') === key)) add(f, 'Plate');
     }
 
@@ -1152,7 +1153,7 @@ function folderResultRow(f, why) {
 
 // Opens a folder directly (from search or the expiring list)
 function openFolder(f) {
-  searchSeq++; // cancel any search still running
+  searchSeq++;
   clearTimeout(searchTimer);
   $('searchInput').value = '';
   $('plateBox').classList.remove('show');
@@ -1175,7 +1176,7 @@ async function doSearch() {
 
   try {
     const [folders] = await Promise.all([getRootFolders(), ensureExpiry()]);
-    if (seq !== searchSeq) return; // a newer search has started
+    if (seq !== searchSeq) return;
 
     const hits = findFolders(term, folders);
     const wrap = $('content');
@@ -1192,6 +1193,7 @@ async function doSearch() {
     list.className = 'result-list';
     hits.forEach(h => list.appendChild(folderResultRow(h.f, h.why)));
     wrap.appendChild(list);
+    applyExpiryTips();
     setStatus(hits.length + ' folder match' + (hits.length === 1 ? '' : 'es'));
   } catch (e) {
     if (seq !== searchSeq) return;
@@ -1361,7 +1363,6 @@ function closeViewerOnError(f, e) {
   setStatus('Could not open ' + f.name + ': ' + e.message);
 }
 
-// True if a rendered page is blank (all white), so it can be skipped
 function isBlankCanvas(canvas) {
   const ctx = canvas.getContext('2d');
   const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
