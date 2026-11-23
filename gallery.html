@@ -1794,10 +1794,10 @@ $('chatList').addEventListener('click', e => {
   }
 });
 
-// Keep the chat badge fresh while the panel is closed
+// Check for new messages every 5 seconds, even when the chat panel is closed
 setInterval(() => {
   if (!$('chatPanel').classList.contains('show')) pollChat(false);
-}, 20000);
+}, 5000);
 </script>
 </body>
 </html>
