@@ -1039,6 +1039,7 @@ function resultRow(r) {
   const isPdf = r.mime === 'application/pdf';
   const kind = r.isFolder ? 'folder' : (isPdf ? 'pdf' : 'img');
   const where = ['Home'].concat((r.where || []).map(p => p.name)).join(' / ');
+  const plate = r.isFolder && expiryMap[r.name] ? expiryMap[r.name].plate : '';
 
   const el = document.createElement('div');
   el.className = 'result';
@@ -1048,7 +1049,9 @@ function resultRow(r) {
     (r.isFolder ? ICONS.folder : (isPdf ? ICONS.pdf : ICONS.img)) +
     '</div>' +
     '<div class="result-main">' +
-    '<div class="result-name">' + esc(r.name) + '</div>' +
+    '<div class="result-name">' + esc(r.name) +
+      (plate ? '<span class="tile-plate">' + esc(plate) + '</span>' : '') +
+    '</div>' +
     '<div class="result-path">' + esc(where) + '</div>' +
     '</div>';
 
