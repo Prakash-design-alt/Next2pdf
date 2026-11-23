@@ -132,13 +132,15 @@ svg { display: block; }
 .notif-time { font-size: 12px; color: var(--muted); }
 .notif-change { font-weight: 600; margin-top: 2px; word-break: break-word; }
 .notif-name { word-break: break-word; }
+.exp-legend { padding: 8px 16px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); }
 
 /* Expiring items */
 .exp-item {
   display: grid; grid-template-columns: 1fr auto; gap: 2px 10px;
   padding: 10px 16px; border-bottom: 1px solid var(--border);
-  border-left: 4px solid transparent; font-size: 13px;
+  border-left: 4px solid transparent; font-size: 13px; cursor: pointer;
 }
+.exp-item:hover { filter: brightness(0.97); }
 .exp-item:last-child { border-bottom: none; }
 .exp-item.expired { border-left-color: #dc2626; background: #fff5f5; }
 .exp-item.soon { border-left-color: #f59e0b; background: #fffbeb; }
@@ -148,7 +150,6 @@ svg { display: block; }
 .exp-state { font-size: 12px; text-align: right; white-space: nowrap; }
 .exp-item.expired .exp-state, .exp-item.expired .exp-date { color: #b91c1c; }
 .exp-item.soon .exp-state, .exp-item.soon .exp-date { color: #b45309; }
-.exp-legend { padding: 8px 16px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); }
 
 /* Ticker */
 .ticker {
@@ -194,6 +195,20 @@ svg { display: block; }
   background: var(--primary); color: #fff; white-space: nowrap;
 }
 .chassis-copy:hover { background: var(--primary-dark); }
+
+/* Plate box */
+.plate-box {
+  display: none; align-items: center; padding: 6px 10px;
+  border: 1px solid #ddd6fe; background: #f5f3ff; border-radius: 10px;
+  font-size: 13px; font-weight: 600; color: #7c3aed; white-space: nowrap;
+}
+.plate-box.show { display: inline-flex; }
+
+/* Plate shown beside folder names (faded) */
+.tile-plate {
+  color: #a78bfa; font-weight: 500; font-size: 12px; white-space: nowrap;
+  margin-left: 8px; opacity: 0.75;
+}
 
 /* Loading */
 .loader {
@@ -285,14 +300,10 @@ svg { display: block; }
 .result .badge { width: 38px; height: 38px; border-radius: 10px; }
 .result .badge svg { width: 19px; height: 19px; }
 .result-main { flex: 1; min-width: 0; }
-.result-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.result-path { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.result-actions { display: flex; gap: 6px; flex-shrink: 0; }
-.text-btn {
-  border: 1px solid var(--border); background: var(--surface); color: var(--text);
-  padding: 6px 12px; border-radius: 8px; font-size: 13px;
+.result-name {
+  font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.text-btn:hover { border-color: #bfdbfe; color: var(--primary); }
+.result-path { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .empty {
   text-align: center; padding: 60px 20px; color: var(--muted); font-size: 14px;
   background: var(--surface); border: 1px dashed #cbd5e1; border-radius: var(--radius);
@@ -321,6 +332,13 @@ svg { display: block; }
   max-width: 100%; max-height: 100%; border-radius: 6px; box-shadow: 0 6px 24px rgba(0,0,0,.25);
 }
 
+/* Print frame */
+#printFrame {
+  position: fixed; left: 0; bottom: 0; width: 1px; height: 1px;
+  border: 0; opacity: 0; pointer-events: none;
+}
+
+/* Mobile */
 @media (max-width: 720px) {
   .topbar { flex-wrap: wrap; padding: 12px 16px; }
   .search { order: 3; max-width: none; flex-basis: 100%; }
@@ -328,33 +346,14 @@ svg { display: block; }
   .toolbar, .content { padding-left: 16px; padding-right: 16px; }
   .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
   .tile-actions { opacity: 1; }
-}
-
-/* Print frame */
-#printFrame {
-  position: fixed; left: 0; bottom: 0; width: 1px; height: 1px;
-  border: 0; opacity: 0; pointer-events: none;
-}
-    .exp-item { cursor: pointer; }
-  .exp-item:hover { filter: brightness(0.97); }
-/* Mobile: notification and expiring panels open in the middle of the screen */
-@media (max-width: 720px) {
-  .notif-panel,
-  .notif-panel.wide {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    right: auto;
+  .notif-panel, .notif-panel.wide {
+    position: fixed; top: 50%; left: 50%; right: auto;
     transform: translate(-50%, -50%);
-    width: calc(100vw - 32px);
-    max-width: 440px;
-    max-height: 70vh;
-    z-index: 200;
+    width: calc(100vw - 32px); max-width: 440px; max-height: 70vh; z-index: 200;
   }
   .notif-head { font-size: 14px; }
   .exp-item { padding: 12px 14px; }
 }
-  .tile-plate { color: #a78bfa; font-weight: 500; font-size: 12px; white-space: nowrap; margin-left: 8px; opacity: 0.75; }
 </style>
 </head>
 
@@ -400,11 +399,11 @@ svg { display: block; }
         <circle cx="11" cy="11" r="7"/>
         <path d="M21 21l-4.3-4.3"/>
       </svg>
-      <input id="searchInput" type="search" placeholder="Search folders, files, plate or chassis number">
+      <input id="searchInput" type="search" placeholder="Search folders, plate or chassis number">
     </div>
 
     <div class="top-actions">
-      <!-- Expiring documents bell (⚠) -->
+      <!-- Expiring documents bell -->
       <div class="notif-wrap">
         <button id="expBtn" class="bell warn" title="Expiring documents">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -459,6 +458,7 @@ svg { display: block; }
       <code id="chassisText"></code>
       <button id="chassisCopy" class="chassis-copy">Copy chassis</button>
     </div>
+    <span id="plateBox" class="plate-box"></span>
     <span id="status" class="status"></span>
   </div>
 
@@ -537,15 +537,22 @@ const ICONS = {
   print: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>'
 };
 
+// ============================================================
+// STATE
+// ============================================================
+
 let stack = [];
 let rootId = null;
 let started = false;
 let viewerFile = null;
 let busyTimer = null;
 let searchTimer = null;
+let searchSeq = 0;
 let expiryMap = {};
 let notifItems = [];
 let expItems = [];
+let rootFoldersPromise = null;
+let tipEl = null;
 const folderCache = new Map();
 
 function setStatus(t) { $('status').textContent = t; }
@@ -650,9 +657,11 @@ firebase.auth().onAuthStateChanged(user => {
     started = false;
     stack = [];
     folderCache.clear();
+    expiryMap = {};
     $('content').innerHTML = '';
     $('crumbs').innerHTML = '';
     $('chassisBox').classList.remove('show');
+    $('plateBox').classList.remove('show');
     $('notifPanel').classList.remove('show');
     $('expPanel').classList.remove('show');
     setStatus('');
@@ -680,8 +689,26 @@ async function start() {
 }
 
 // ============================================================
-// EXPIRING DOCUMENTS BELL (⚠)
-// Expired (red) and expiring within 30 days (amber).
+// EXPIRY MAP (plate, dates and chassis for each folder)
+// ============================================================
+
+async function loadExpiryMap() {
+  try {
+    expiryMap = await runServer('getExpiryMap');
+    applyExpiryTips();
+    updateChassisBox();
+  } catch (e) {
+    // Plates, dates and chassis are optional; the gallery still works without them
+  }
+}
+
+async function ensureExpiry() {
+  if (Object.keys(expiryMap).length) return;
+  await loadExpiryMap();
+}
+
+// ============================================================
+// EXPIRING DOCUMENTS BELL
 // ============================================================
 
 function describeDays(days) {
@@ -722,14 +749,12 @@ function renderExpiring() {
 async function toggleExpiring(e) {
   e.stopPropagation();
   $('notifPanel').classList.remove('show');
-  const panel = $('expPanel');
-  const open = panel.classList.toggle('show');
+  const open = $('expPanel').classList.toggle('show');
   if (open) await loadExpiring();
 }
 
 // ============================================================
 // RECENT CHANGES BELL
-// The count shows changes not yet seen on this browser.
 // ============================================================
 
 function lastSeenMs() {
@@ -775,15 +800,14 @@ function markChangesSeen() {
 async function toggleNotifications(e) {
   e.stopPropagation();
   $('expPanel').classList.remove('show');
-  const panel = $('notifPanel');
-  const open = panel.classList.toggle('show');
+  const open = $('notifPanel').classList.toggle('show');
   if (open) {
     await loadChanges();
     markChangesSeen();
   }
 }
 
-// Close both panels when clicking anywhere else
+// Close both panels when clicking anywhere outside them
 document.addEventListener('click', e => {
   if (!e.target.closest('.notif-wrap')) {
     $('notifPanel').classList.remove('show');
@@ -818,15 +842,22 @@ function renderCrumbs() {
   updateChassisBox();
 }
 
-// Shows the chassis number of the open folder, if the Plates tab has one
+// Shows the chassis and plate of the open folder, when the Plates tab has them
 function updateChassisBox() {
-  const box = $('chassisBox');
-  const info = stack.length > 1 ? expiryMap[current().name] : null;
+  const info = stack.length > 1 && current() ? expiryMap[current().name] : null;
+
   if (info && info.chassis) {
     $('chassisText').textContent = info.chassis;
-    box.classList.add('show');
+    $('chassisBox').classList.add('show');
   } else {
-    box.classList.remove('show');
+    $('chassisBox').classList.remove('show');
+  }
+
+  if (info && info.plate) {
+    $('plateBox').textContent = info.plate;
+    $('plateBox').classList.add('show');
+  } else {
+    $('plateBox').classList.remove('show');
   }
 }
 
@@ -875,7 +906,6 @@ function loadCurrent() {
     });
 }
 
-// Refresh: fetches the current folder from Drive, ignoring the server cache
 function refreshCurrent() {
   const id = current().id;
   renderCrumbs();
@@ -889,7 +919,7 @@ function refreshCurrent() {
 }
 
 // ============================================================
-// RENDER
+// RENDER FOLDERS AND FILES
 // ============================================================
 
 function render(res) {
@@ -919,6 +949,7 @@ function render(res) {
   }
 
   applyExpiryTips();
+  updateChassisBox();
   setStatus(res.folders.length + ' folders, ' + res.files.length + ' files');
 }
 
@@ -968,7 +999,7 @@ function fileTile(f) {
 }
 
 // ============================================================
-// EXPIRY DATES AND FLOATING TOOLTIP
+// PLATE AND EXPIRY TOOLTIPS
 // ============================================================
 
 function applyExpiryTips() {
@@ -985,8 +1016,6 @@ function applyExpiryTips() {
       'MVPI expire: ' + (i.mvpi || '-');
   });
 }
-
-let tipEl = null;
 
 function moveTip(e) {
   const pad = 14;
@@ -1021,100 +1050,157 @@ function setupTooltip() {
   });
 }
 
-async function loadExpiryMap() {
-  try {
-    expiryMap = await runServer('getExpiryMap');
-    applyExpiryTips();
-    updateChassisBox();
-  } catch (e) {
-    // Dates and chassis numbers are optional; the gallery still works without them
+// ============================================================
+// FAST FOLDER SEARCH (runs in the browser, exact matches only)
+// ============================================================
+
+// Keeps only letters and digits in lower case, so "AT 1047", "at-1047" and "at1047" match
+const normKey = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+// Home folder list, loaded once (from memory when possible)
+async function getRootFolders() {
+  const cached = folderCache.get(rootId);
+  if (cached) return cached.folders;
+
+  if (!rootFoldersPromise) {
+    rootFoldersPromise = (async () => {
+      let res;
+      try {
+        res = await runServer('listFolder', rootId);
+      } catch (e) {
+        await new Promise(r => setTimeout(r, 1500)); // retry once after a short wait
+        res = await runServer('listFolder', rootId);
+      }
+      folderCache.set(rootId, res);
+      return res.folders;
+    })().finally(() => { rootFoldersPromise = null; });
   }
+  return rootFoldersPromise;
 }
 
-// ============================================================
-// SEARCH
-// ============================================================
+// Exact matches only: AT number, plate, or chassis
+function findFolders(term, folders) {
+  const key = normKey(term);
+  if (!key) return [];
 
-function resultRow(r) {
-  const isPdf = r.mime === 'application/pdf';
-  const kind = r.isFolder ? 'folder' : (isPdf ? 'pdf' : 'img');
-  const where = ['Home'].concat((r.where || []).map(p => p.name)).join(' / ');
-  const plate = r.isFolder && expiryMap[r.name] ? expiryMap[r.name].plate : '';
+  // A plain number such as "1047" or "at1047" means AT 1047 (not AT 10 or AT 104)
+  const numMatch = key.match(/^(?:at)?0*(\d+)$/);
+  const wantNum = numMatch ? Number(numMatch[1]) : null;
 
+  const hits = [];
+  const seen = new Set();
+  const add = (f, why) => {
+    if (seen.has(f.id)) return;
+    seen.add(f.id);
+    hits.push({ f: f, why: why });
+  };
+
+  // 1. AT number
+  folders.forEach(f => {
+    const name = normKey(f.name);
+    const m = name.match(/^at0*(\d+)$/);
+    if (!m) return;
+    if (name === key || (wantNum !== null && Number(m[1]) === wantNum)) add(f, 'AT');
+  });
+
+  // 2. Plate and chassis (from the Plates tab)
+  folders.forEach(f => {
+    const info = expiryMap[f.name];
+    if (!info) return;
+
+    if (info.plate) {
+      const plates = info.plate.split(/[,;\n\/]/).map(normKey).filter(Boolean);
+      // Full plate ("zsa3127") or only its number ("3127")
+      if (plates.some(p => p === key || p.replace(/^[a-z]+/, '') === key)) add(f, 'Plate');
+    }
+
+    if (info.chassis && normKey(info.chassis) === key) add(f, 'Chassis');
+  });
+
+  return hits.slice(0, 50);
+}
+
+function folderResultRow(f, why) {
+  const info = expiryMap[f.name] || {};
   const el = document.createElement('div');
   el.className = 'result';
-  if (r.isFolder) el.dataset.folder = r.name;
+  el.dataset.folder = f.name;
   el.innerHTML =
-    '<div class="badge ' + kind + '">' +
-    (r.isFolder ? ICONS.folder : (isPdf ? ICONS.pdf : ICONS.img)) +
-    '</div>' +
+    '<div class="badge folder">' + ICONS.folder + '</div>' +
     '<div class="result-main">' +
-    '<div class="result-name">' + esc(r.name) +
-      (plate ? '<span class="tile-plate">' + esc(plate) + '</span>' : '') +
-    '</div>' +
-    '<div class="result-path">' + esc(where) + '</div>' +
+      '<div class="result-name">' + esc(f.name) +
+        (info.plate ? '<span class="tile-plate">' + esc(info.plate) + '</span>' : '') +
+      '</div>' +
+      '<div class="result-path">Matched by ' + esc(why.toLowerCase()) +
+        (info.chassis ? ' · Chassis ' + esc(info.chassis) : '') +
+      '</div>' +
     '</div>';
-
-  if (!r.isFolder) {
-    const actions = document.createElement('div');
-    actions.className = 'result-actions';
-
-    const pb = document.createElement('button');
-    pb.className = 'text-btn';
-    pb.textContent = 'Print';
-    pb.onclick = e => { e.stopPropagation(); printFile({ id: r.id, name: r.name, mime: r.mime }); };
-
-    const db = document.createElement('button');
-    db.className = 'text-btn';
-    db.textContent = 'Download';
-    db.onclick = e => { e.stopPropagation(); downloadFile({ id: r.id, name: r.name }); };
-
-    actions.appendChild(pb);
-    actions.appendChild(db);
-    el.appendChild(actions);
-  }
-
-  el.onclick = () => openResult(r);
+  el.onclick = () => openFolder(f);
   return el;
 }
 
-function doSearch() {
-  const term = $('searchInput').value.trim();
-  if (!term) { loadCurrent(); return; }
-
-  const wrap = $('content');
-  wrap.innerHTML = loaderHtml('Searching, please wait...');
-  $('crumbs').innerHTML = '<span class="crumb current">Search: ' + esc(term) + '</span>';
-  $('chassisBox').classList.remove('show');
-  $('backBtn').disabled = true;
-  setStatus('');
-
-  runServer('searchItems', term)
-    .then(res => {
-      if (!res.length) {
-        wrap.innerHTML = '<div class="empty">No matches for "' + esc(term) + '".</div>';
-        setStatus('');
-        return;
-      }
-      wrap.innerHTML = '';
-      const list = document.createElement('div');
-      list.className = 'result-list';
-      res.forEach(r => list.appendChild(resultRow(r)));
-      wrap.appendChild(list);
-      applyExpiryTips();
-      setStatus(res.length + ' matches');
-    })
-    .catch(e => {
-      wrap.innerHTML = '';
-      setStatus('Error: ' + e.message);
-    });
+// Opens a folder directly (from search or the expiring list)
+function openFolder(f) {
+  searchSeq++; // cancel any search still running
+  clearTimeout(searchTimer);
+  $('searchInput').value = '';
+  $('plateBox').classList.remove('show');
+  stack = [{ id: rootId, name: 'Home' }, { id: f.id, name: f.name }];
+  loadCurrent();
 }
 
-function openResult(r) {
-  $('searchInput').value = '';
-  stack = [{ id: rootId, name: 'Home' }].concat(r.goto);
-  loadCurrent();
-  if (!r.isFolder) openItem({ id: r.id, name: r.name, mime: r.mime });
+async function doSearch() {
+  const term = $('searchInput').value.trim();
+  const seq = ++searchSeq;
+
+  if (!term) { loadCurrent(); return; }
+
+  $('crumbs').innerHTML = '<span class="crumb current">Search: ' + esc(term) + '</span>';
+  $('chassisBox').classList.remove('show');
+  $('plateBox').classList.remove('show');
+  $('backBtn').disabled = true;
+  $('content').innerHTML = loaderHtml('Searching...');
+  setStatus('');
+
+  try {
+    const [folders] = await Promise.all([getRootFolders(), ensureExpiry()]);
+    if (seq !== searchSeq) return; // a newer search has started
+
+    const hits = findFolders(term, folders);
+    const wrap = $('content');
+
+    if (!hits.length) {
+      wrap.innerHTML = '<div class="empty">No folder matches "' + esc(term) +
+        '". Try the exact AT number (for example AT 1047), the full plate, or the full chassis number.</div>';
+      setStatus('');
+      return;
+    }
+
+    wrap.innerHTML = '';
+    const list = document.createElement('div');
+    list.className = 'result-list';
+    hits.forEach(h => list.appendChild(folderResultRow(h.f, h.why)));
+    wrap.appendChild(list);
+    setStatus(hits.length + ' folder match' + (hits.length === 1 ? '' : 'es'));
+  } catch (e) {
+    if (seq !== searchSeq) return;
+    $('content').innerHTML = '';
+    setStatus('Search could not load the folder list. Check your connection and try again.');
+  }
+}
+
+// Opens the folder for an AT number from the expiring list
+async function openAtFolder(at) {
+  $('expPanel').classList.remove('show');
+  setStatus('Opening ' + at + '...');
+  try {
+    const folders = await getRootFolders();
+    const hit = folders.find(f => normKey(f.name) === normKey(at));
+    if (!hit) { setStatus('Folder ' + at + ' not found'); return; }
+    openFolder(hit);
+  } catch (e) {
+    setStatus('Error: ' + e.message);
+  }
 }
 
 // ============================================================
@@ -1141,8 +1227,8 @@ async function downloadFile(f) {
 
 // ============================================================
 // PRINT
-// PDFs are printed from the original file (browser PDF viewer).
-// Photos are printed as one sheet each, sized to fit the page.
+// PDFs print from the original file (browser PDF viewer).
+// Photos print as one sheet each, sized to fit the page.
 // ============================================================
 
 async function printFile(f) {
@@ -1160,7 +1246,6 @@ async function printFile(f) {
   }
 }
 
-// Prints the original PDF through the browser's own PDF viewer
 function printPdfDirect(b64) {
   const frame = $('printFrame');
   const blob = new Blob([base64ToBytes(b64)], { type: 'application/pdf' });
@@ -1185,7 +1270,6 @@ function printPdfDirect(b64) {
   setTimeout(() => URL.revokeObjectURL(url), 120000);
 }
 
-// Measures each image so every sheet is landscape or portrait to match it
 function measurePages(pages) {
   return Promise.all(pages.map(p => new Promise(resolve => {
     const im = new Image();
@@ -1195,7 +1279,6 @@ function measurePages(pages) {
   })));
 }
 
-// Prints photos: one sheet per image, never cropped
 async function printPages(pages) {
   await measurePages(pages);
 
@@ -1267,7 +1350,7 @@ function closeViewerOnError(f, e) {
   setStatus('Could not open ' + f.name + ': ' + e.message);
 }
 
-// Returns true if a rendered page is blank (all white), so it can be skipped in the viewer
+// True if a rendered page is blank (all white), so it can be skipped
 function isBlankCanvas(canvas) {
   const ctx = canvas.getContext('2d');
   const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
@@ -1337,25 +1420,6 @@ function closeViewer() {
   viewerFile = null;
 }
 
-// Opens the folder for an AT number (for example "AT 381") from the expiring list
-async function openAtFolder(at) {
-  $('expPanel').classList.remove('show');
-  setStatus('Opening ' + at + '...');
-  try {
-    const res = await runServer('searchItems', at);
-    const hit = res.find(r => r.isFolder && r.name.trim().toLowerCase() === at.trim().toLowerCase());
-    if (!hit) {
-      setStatus('Folder ' + at + ' not found');
-      return;
-    }
-    $('searchInput').value = '';
-    stack = [{ id: rootId, name: 'Home' }].concat(hit.goto);
-    loadCurrent();
-  } catch (e) {
-    setStatus('Error: ' + e.message);
-  }
-}
-  
 // ============================================================
 // EVENTS
 // ============================================================
@@ -1363,11 +1427,13 @@ async function openAtFolder(at) {
 setupTooltip();
 
 $('expBtn').addEventListener('click', toggleExpiring);
+$('bellBtn').addEventListener('click', toggleNotifications);
+
 $('expList').addEventListener('click', e => {
   const row = e.target.closest('.exp-item');
   if (row) openAtFolder(row.dataset.at);
 });
-$('bellBtn').addEventListener('click', toggleNotifications);
+
 $('backBtn').onclick = goBack;
 $('reloadBtn').onclick = refreshCurrent;
 $('chassisCopy').onclick = copyChassis;
@@ -1379,15 +1445,14 @@ $('viewer').addEventListener('click', e => {
   if (e.target.classList.contains('viewer-body')) closeViewer();
 });
 
+// Search: Enter runs it now; typing runs it 250 ms after you stop
 $('searchInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') { clearTimeout(searchTimer); doSearch(); }
 });
 
-// Search as you type (waits half a second after you stop typing)
-$('searchInput').addEventListener('input', e => {
+$('searchInput').addEventListener('input', () => {
   clearTimeout(searchTimer);
-  if (!e.target.value.trim()) { loadCurrent(); return; }
-  searchTimer = setTimeout(doSearch, 500);
+  searchTimer = setTimeout(doSearch, 250);
 });
 </script>
 </body>
