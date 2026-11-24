@@ -462,7 +462,27 @@ svg { display: block; }
 /* Refresh button spinner */
 #reloadBtn.spinning svg { animation: spin .8s linear infinite; }
 #reloadBtn:disabled { cursor: wait; }
-  
+
+/* Refresh: bouncing dots and two blinks */
+.refresh-loader {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; padding: 80px 20px; color: var(--muted); font-size: 15px;
+}
+.refresh-dots span {
+  display: inline-block; font-size: 22px; font-weight: 700; color: var(--primary);
+  animation: dotBounce 1s infinite;
+}
+.refresh-dots span:nth-child(2) { animation-delay: .15s; }
+.refresh-dots span:nth-child(3) { animation-delay: .3s; }
+@keyframes dotBounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: .35; }
+  40% { transform: translateY(-8px); opacity: 1; }
+}
+.blink-twice { animation: blinkTwice .4s linear 2; }
+@keyframes blinkTwice {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .25; }
+}
   
 </style>
 </head>
@@ -1058,7 +1078,7 @@ function loadCurrent() {
     });
 }
 
-// Refresh: reloads the current folder from Drive in the same place, with a visible spinner
+// Refresh: shows a dots spinner on screen, reloads in the same place, then blinks twice
 async function refreshCurrent() {
   const btn = $('reloadBtn');
   if (btn.classList.contains('spinning')) return;
@@ -1067,12 +1087,16 @@ async function refreshCurrent() {
   btn.disabled = true;
   setStatus('Refreshing...');
 
+  const wrap = $('content');
+  wrap.innerHTML =
+    '<div class="refresh-loader"><div class="refresh-dots"><span>.</span><span>.</span><span>.</span></div>' +
+    '<div>Refreshing</div></div>';
+
   const id = current().id;
   const term = $('searchInput').value.trim();
 
   try {
     if (term) {
-      // In search mode: reload the plate, chassis and folder list, then search again
       folderCache.delete(rootId);
       await loadExpiryMap();
       await doSearch();
@@ -1085,11 +1109,17 @@ async function refreshCurrent() {
     }
     setStatus('Refreshed');
   } catch (e) {
+    wrap.innerHTML = '<div class="empty">Refresh failed. Please try again.</div>';
     setStatus('Refresh failed: ' + e.message);
   } finally {
     btn.classList.remove('spinning');
     btn.disabled = false;
   }
+
+  // Blink the screen twice to show it has refreshed
+  wrap.classList.remove('blink-twice');
+  void wrap.offsetWidth;
+  wrap.classList.add('blink-twice');
 }
 
 // ============================================================
