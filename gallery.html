@@ -459,6 +459,10 @@ svg { display: block; }
   background: #fef9c3; border: 1px solid #fde68a; color: #854d0e;
   font-size: 12px; line-height: 1.4;
 }  
+/* Refresh button spinner */
+#reloadBtn.spinning svg { animation: spin .8s linear infinite; }
+#reloadBtn:disabled { cursor: wait; }
+  
   
 </style>
 </head>
@@ -1054,16 +1058,38 @@ function loadCurrent() {
     });
 }
 
-function refreshCurrent() {
-  const id = current().id;
-  renderCrumbs();
+// Refresh: reloads the current folder from Drive in the same place, with a visible spinner
+async function refreshCurrent() {
+  const btn = $('reloadBtn');
+  if (btn.classList.contains('spinning')) return;
+
+  btn.classList.add('spinning');
+  btn.disabled = true;
   setStatus('Refreshing...');
-  runServer('refreshFolder', id)
-    .then(res => {
+
+  const id = current().id;
+  const term = $('searchInput').value.trim();
+
+  try {
+    if (term) {
+      // In search mode: reload the plate, chassis and folder list, then search again
+      folderCache.delete(rootId);
+      await loadExpiryMap();
+      await doSearch();
+    } else {
+      renderCrumbs();
+      const res = await runServer('refreshFolder', id);
       folderCache.set(id, res);
       if (current().id === id) render(res);
-    })
-    .catch(e => setStatus('Error: ' + e.message));
+      loadExpiryMap();
+    }
+    setStatus('Refreshed');
+  } catch (e) {
+    setStatus('Refresh failed: ' + e.message);
+  } finally {
+    btn.classList.remove('spinning');
+    btn.disabled = false;
+  }
 }
 
 // ============================================================
