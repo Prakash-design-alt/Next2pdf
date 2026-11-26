@@ -348,12 +348,20 @@ svg { display: block; }
 .chat-fab-ico .dot { animation: chatDot 1.2s ease-in-out infinite; }
 .chat-fab-ico .d2 { animation-delay: .15s; }
 .chat-fab-ico .d3 { animation-delay: .3s; }
+  
+  .chat-fab.has-new {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  box-shadow: 0 6px 18px rgba(34,197,94,.45);
+}
+.chat-fab.has-new::before { border-color: rgba(34,197,94,.6); }
+  
 .chat-badge {
-  position: absolute; top: -6px; right: -6px; display: none;
-  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
-  background: #22c55e; color: #fff; font-size: 11px; font-weight: 700;
+  position: absolute; top: -10px; right: -6px; display: none;
+  min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px;
+  background: #dc2626; color: #fff; font-size: 12px; font-weight: 700;
   align-items: center; justify-content: center; box-shadow: 0 0 0 2px #fff;
   animation: chatPop .4s ease;
+}
 }
 .chat-badge.show { display: flex; }
 @keyframes chatBob { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-3px) rotate(-6deg); } }
@@ -1731,6 +1739,7 @@ function updateChatBadge() {
   const b = $('chatBadge');
   b.textContent = unread > 9 ? '9+' : String(unread);
   b.classList.toggle('show', unread > 0);
+  $('chatBtn').classList.toggle('has-new', unread > 0);
 }
 
 async function pollChat(scrollToEnd) {
