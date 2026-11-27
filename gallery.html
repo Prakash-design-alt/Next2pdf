@@ -980,10 +980,12 @@ async function toggleExpiring(e) {
 async function loadUpd() {
   try {
     updItems = await runServer('getUpdExpiring');
+    renderUpd();
   } catch (e) {
     updItems = [];
+    $('updList').innerHTML = '<div class="notif-item" style="color:#b91c1c">UPD error: ' + esc(e.message) + '</div>';
+    $('updBadge').classList.remove('show');
   }
-  renderUpd();
 }
 
 function renderUpd() {
