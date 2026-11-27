@@ -115,6 +115,18 @@ svg { display: block; }
   align-items: center; justify-content: center;
 }
 .bell-badge.show { display: flex; }
+
+/* UPD Expiry button (text + calendar icon) */
+.upd-btn {
+  position: relative; height: 40px; padding: 0 12px; border-radius: 10px;
+  border: 1px solid #99f6e4; background: #f0fdfa; color: #0f766e;
+  display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700;
+  white-space: nowrap;
+}
+.upd-btn:hover { background: #ccfbf1; }
+.upd-btn svg { width: 18px; height: 18px; }
+.upd-btn .bell-badge { top: -7px; right: -7px; }
+
 .notif-panel {
   position: absolute; right: 0; top: 48px; width: 380px; max-width: 92vw;
   max-height: 440px; overflow: auto; display: none; z-index: 60;
@@ -134,7 +146,7 @@ svg { display: block; }
 .notif-name { word-break: break-word; }
 .exp-legend { padding: 8px 16px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); }
 
-/* Expiring items */
+/* Expiring items (used by the expiry and UPD lists) */
 .exp-item {
   display: grid; grid-template-columns: 1fr auto; gap: 2px 10px;
   padding: 10px 16px; border-bottom: 1px solid var(--border);
@@ -348,13 +360,11 @@ svg { display: block; }
 .chat-fab-ico .dot { animation: chatDot 1.2s ease-in-out infinite; }
 .chat-fab-ico .d2 { animation-delay: .15s; }
 .chat-fab-ico .d3 { animation-delay: .3s; }
-  
-  .chat-fab.has-new {
+.chat-fab.has-new {
   background: linear-gradient(135deg, #16a34a, #22c55e);
   box-shadow: 0 6px 18px rgba(34,197,94,.45);
 }
 .chat-fab.has-new::before { border-color: rgba(34,197,94,.6); }
-  
 .chat-badge {
   position: absolute; top: -10px; right: -8px; display: none;
   min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px;
@@ -362,8 +372,6 @@ svg { display: block; }
   align-items: center; justify-content: center;
   box-shadow: 0 0 0 2px #fff; z-index: 5;
   animation: chatPop .4s ease;
-}
-.chat-badge.show { display: flex; }
 }
 .chat-badge.show { display: flex; }
 @keyframes chatBob { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-3px) rotate(-6deg); } }
@@ -396,6 +404,10 @@ svg { display: block; }
   100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
 }
 .chat-x { border: none; background: none; color: #fff; font-size: 22px; line-height: 1; padding: 0 4px; }
+.chat-notice {
+  margin: 0; padding: 8px 12px; background: #fef9c3; border-bottom: 1px solid #fde68a;
+  color: #854d0e; font-size: 12px; line-height: 1.4;
+}
 .chat-list { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: #f8fafc; }
 .chat-empty { text-align: center; color: var(--muted); font-size: 13px; margin: auto; }
 .chat-msg {
@@ -408,6 +420,7 @@ svg { display: block; }
 .chat-meta { font-size: 11px; color: var(--muted); margin-bottom: 3px; word-break: break-all; }
 .chat-text { font-size: 14px; white-space: pre-wrap; word-break: break-word; }
 .chat-text.big { font-size: 40px; line-height: 1.2; }
+.chat-seen { font-size: 11px; color: var(--muted); margin-top: 4px; text-align: right; }
 .chat-file {
   display: flex; align-items: center; gap: 10px; margin-top: 6px; width: 100%;
   padding: 8px 10px; border: 1px dashed #c7d2fe; border-radius: 10px; background: #f5f3ff; text-align: left;
@@ -435,6 +448,29 @@ svg { display: block; }
 }
 .chat-input-row input:focus { border-color: var(--primary); background: #fff; }
 
+/* Refresh: spinner on the button and bouncing dots on screen */
+#reloadBtn.spinning svg { animation: spin .8s linear infinite; }
+#reloadBtn:disabled { cursor: wait; }
+.refresh-loader {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; padding: 80px 20px; color: var(--muted); font-size: 15px;
+}
+.refresh-dots span {
+  display: inline-block; font-size: 22px; font-weight: 700; color: var(--primary);
+  animation: dotBounce 1s infinite;
+}
+.refresh-dots span:nth-child(2) { animation-delay: .15s; }
+.refresh-dots span:nth-child(3) { animation-delay: .3s; }
+@keyframes dotBounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: .35; }
+  40% { transform: translateY(-8px); opacity: 1; }
+}
+.blink-twice { animation: blinkTwice .4s linear 2; }
+@keyframes blinkTwice {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .25; }
+}
+
 /* Print frame */
 #printFrame {
   position: fixed; left: 0; bottom: 0; width: 1px; height: 1px;
@@ -458,42 +494,10 @@ svg { display: block; }
   .exp-item { padding: 12px 14px; }
   .chat-fab-label { display: none; }
   .chat-fab { padding: 8px; }
+  .upd-btn-label { display: none; }
+  .upd-btn { padding: 0 10px; }
   .chat-panel { left: 8px; right: 8px; bottom: 8px; width: auto; height: 70vh; }
 }
-/* Read receipts */
-.chat-seen { font-size: 11px; color: var(--muted); margin-top: 4px; text-align: right; }
-
-/* Chat notice shown when the chat opens */
-.chat-notice {
-  margin: 0 0 4px; padding: 8px 10px; border-radius: 10px;
-  background: #fef9c3; border: 1px solid #fde68a; color: #854d0e;
-  font-size: 12px; line-height: 1.4;
-}  
-/* Refresh button spinner */
-#reloadBtn.spinning svg { animation: spin .8s linear infinite; }
-#reloadBtn:disabled { cursor: wait; }
-
-/* Refresh: bouncing dots and two blinks */
-.refresh-loader {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 14px; padding: 80px 20px; color: var(--muted); font-size: 15px;
-}
-.refresh-dots span {
-  display: inline-block; font-size: 22px; font-weight: 700; color: var(--primary);
-  animation: dotBounce 1s infinite;
-}
-.refresh-dots span:nth-child(2) { animation-delay: .15s; }
-.refresh-dots span:nth-child(3) { animation-delay: .3s; }
-@keyframes dotBounce {
-  0%, 80%, 100% { transform: translateY(0); opacity: .35; }
-  40% { transform: translateY(-8px); opacity: 1; }
-}
-.blink-twice { animation: blinkTwice .4s linear 2; }
-@keyframes blinkTwice {
-  0%, 100% { opacity: 1; }
-  50% { opacity: .25; }
-}
-  
 </style>
 </head>
 
@@ -557,6 +561,25 @@ svg { display: block; }
         <span id="chatBadge" class="chat-badge"></span>
       </button>
 
+      <!-- UPD Expiry button -->
+      <div class="notif-wrap">
+        <button id="updBtn" class="upd-btn" title="UPD Expiry">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span class="upd-btn-label">UPD Expiry</span>
+          <span id="updBadge" class="bell-badge"></span>
+        </button>
+        <div id="updPanel" class="notif-panel wide">
+          <div class="notif-head">UPD Expiry (last 30 days and next 30 days)</div>
+          <div class="exp-legend"><span style="color:#b91c1c">● Red</span> = expired &nbsp; <span style="color:#b45309">● Amber</span> = expires within 30 days</div>
+          <div id="updList"></div>
+        </div>
+      </div>
+
       <!-- Expiring documents bell -->
       <div class="notif-wrap">
         <button id="expBtn" class="bell warn" title="Expiring documents">
@@ -594,10 +617,9 @@ svg { display: block; }
       <button id="logoutBtn" class="btn">Sign out</button>
     </div>
   </header>
-  
-  <!-- Notice Board -->
+
   <div class="ticker"><span class="ticker-text"> "Insurance for July 2026 has been updated" </span></div>
-  
+
   <div class="toolbar">
     <button id="backBtn" class="btn" disabled>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -652,7 +674,7 @@ svg { display: block; }
     <span class="chat-title"><span class="live-dot"></span> Drive Group Chat</span>
     <button id="chatClose" class="chat-x" title="Close">×</button>
   </div>
-  <div class="chat-notice">📌 Hi team, please keep Group Chat messages work-related and respectful👍</div>
+  <div class="chat-notice">📌 Hi team, please keep Group Chat messages work-related and respectful 👍</div>
   <div id="chatList" class="chat-list"></div>
   <div id="chatEmojiBar" class="emoji-bar"></div>
   <div class="chat-input-row">
@@ -724,6 +746,7 @@ let searchSeq = 0;
 let expiryMap = {};
 let notifItems = [];
 let expItems = [];
+let updItems = [];
 let rootFoldersPromise = null;
 let tipEl = null;
 let chatTimer = null;
@@ -759,6 +782,11 @@ function showBusy(message) {
 function hideBusy() {
   clearTimeout(busyTimer);
   $('busy').classList.remove('show');
+}
+function closeAllPanels() {
+  $('notifPanel').classList.remove('show');
+  $('expPanel').classList.remove('show');
+  $('updPanel').classList.remove('show');
 }
 
 // ============================================================
@@ -843,8 +871,7 @@ firebase.auth().onAuthStateChanged(user => {
     $('crumbs').innerHTML = '';
     $('chassisBox').classList.remove('show');
     $('plateBox').classList.remove('show');
-    $('notifPanel').classList.remove('show');
-    $('expPanel').classList.remove('show');
+    closeAllPanels();
     closeChat();
     setStatus('');
   }
@@ -859,6 +886,7 @@ async function start() {
     loadExpiryMap();
     loadChanges();
     loadExpiring();
+    loadUpd();
     pollChat(false);
   } catch (e) {
     $('content').innerHTML = '';
@@ -891,7 +919,7 @@ async function ensureExpiry() {
 }
 
 // ============================================================
-// EXPIRING DOCUMENTS BELL
+// SHARED LIST HELPERS (expiring documents and UPD expiry)
 // ============================================================
 
 function describeDays(days) {
@@ -899,6 +927,21 @@ function describeDays(days) {
   if (days === 0) return 'Expires today';
   return 'Expires in ' + days + ' day' + (days === 1 ? '' : 's');
 }
+
+function expRowsHtml(items) {
+  return items.map(i =>
+    '<div class="exp-item ' + (i.status === 'expired' ? 'expired' : 'soon') + '" data-at="' + ea(i.at) + '">' +
+      '<div class="exp-at">' + esc(i.at) + '</div>' +
+      '<div class="exp-date">' + esc(i.date) + '</div>' +
+      '<div class="exp-doc">' + esc(i.doc) + '</div>' +
+      '<div class="exp-state">' + esc(describeDays(i.days)) + '</div>' +
+    '</div>'
+  ).join('');
+}
+
+// ============================================================
+// EXPIRING DOCUMENTS BELL
+// ============================================================
 
 async function loadExpiring() {
   try {
@@ -919,21 +962,49 @@ function renderExpiring() {
     list.innerHTML = '<div class="notif-item">No documents expired or expiring in the next 30 days.</div>';
     return;
   }
-  list.innerHTML = expItems.map(i =>
-    '<div class="exp-item ' + (i.status === 'expired' ? 'expired' : 'soon') + '" data-at="' + ea(i.at) + '">' +
-      '<div class="exp-at">' + esc(i.at) + '</div>' +
-      '<div class="exp-date">' + esc(i.date) + '</div>' +
-      '<div class="exp-doc">' + esc(i.doc) + '</div>' +
-      '<div class="exp-state">' + esc(describeDays(i.days)) + '</div>' +
-    '</div>'
-  ).join('');
+  list.innerHTML = expRowsHtml(expItems);
 }
 
 async function toggleExpiring(e) {
   e.stopPropagation();
   $('notifPanel').classList.remove('show');
+  $('updPanel').classList.remove('show');
   const open = $('expPanel').classList.toggle('show');
   if (open) await loadExpiring();
+}
+
+// ============================================================
+// UPD EXPIRY BUTTON (sheet tab "UPD Expiry")
+// ============================================================
+
+async function loadUpd() {
+  try {
+    updItems = await runServer('getUpdExpiring');
+  } catch (e) {
+    updItems = [];
+  }
+  renderUpd();
+}
+
+function renderUpd() {
+  const badge = $('updBadge');
+  badge.textContent = updItems.length > 99 ? '99+' : String(updItems.length);
+  badge.classList.toggle('show', updItems.length > 0);
+
+  const list = $('updList');
+  if (!updItems.length) {
+    list.innerHTML = '<div class="notif-item">No UPD dates expired or due in the next 30 days.</div>';
+    return;
+  }
+  list.innerHTML = expRowsHtml(updItems);
+}
+
+async function toggleUpd(e) {
+  e.stopPropagation();
+  $('notifPanel').classList.remove('show');
+  $('expPanel').classList.remove('show');
+  const open = $('updPanel').classList.toggle('show');
+  if (open) await loadUpd();
 }
 
 // ============================================================
@@ -983,6 +1054,7 @@ function markChangesSeen() {
 async function toggleNotifications(e) {
   e.stopPropagation();
   $('expPanel').classList.remove('show');
+  $('updPanel').classList.remove('show');
   const open = $('notifPanel').classList.toggle('show');
   if (open) {
     await loadChanges();
@@ -990,12 +1062,9 @@ async function toggleNotifications(e) {
   }
 }
 
-// Close both panels when clicking outside them
+// Close all panels when clicking outside them
 document.addEventListener('click', e => {
-  if (!e.target.closest('.notif-wrap')) {
-    $('notifPanel').classList.remove('show');
-    $('expPanel').classList.remove('show');
-  }
+  if (!e.target.closest('.notif-wrap')) closeAllPanels();
 });
 
 // ============================================================
@@ -1118,6 +1187,7 @@ async function refreshCurrent() {
       if (current().id === id) render(res);
       loadExpiryMap();
     }
+    loadUpd();
     setStatus('Refreshed');
   } catch (e) {
     wrap.innerHTML = '<div class="empty">Refresh failed. Please try again.</div>';
@@ -1366,6 +1436,7 @@ function openFolder(f) {
   clearTimeout(searchTimer);
   $('searchInput').value = '';
   $('plateBox').classList.remove('show');
+  closeAllPanels();
   stack = [{ id: rootId, name: 'Home' }, { id: f.id, name: f.name }];
   loadCurrent();
 }
@@ -1411,8 +1482,9 @@ async function doSearch() {
   }
 }
 
+// Opens the folder for an AT number from an expiry list
 async function openAtFolder(at) {
-  $('expPanel').classList.remove('show');
+  closeAllPanels();
   setStatus('Opening ' + at + '...');
   try {
     const folders = await getRootFolders();
@@ -1681,6 +1753,7 @@ function fileChipHtml(m) {
     '<small>' + esc(fmtSize(m.size)) + ' · tap to open</small></span>' +
     '</button>';
 }
+
 // "Seen by Gulraiz, Afzal" for a message; "Sent" for your own message nobody has read yet
 function seenByText(m) {
   const me = myEmail();
@@ -1692,7 +1765,7 @@ function seenByText(m) {
   if (!readers.length) return sender === me ? 'Sent' : '';
   return '👁 Seen by ' + readers.join(', ');
 }
-  
+
 function renderChat(scrollToEnd) {
   const list = $('chatList');
   const nearBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 60;
@@ -1724,6 +1797,7 @@ function renderChat(scrollToEnd) {
 
   if (scrollToEnd || nearBottom) list.scrollTop = list.scrollHeight;
 }
+
 function updateChatBadge() {
   const open = $('chatPanel').classList.contains('show');
   const newest = chatMsgs.reduce((mx, m) => Math.max(mx, m.ms), 0);
@@ -1761,6 +1835,7 @@ async function pollChat(scrollToEnd) {
     // Try again on the next check
   }
 }
+
 function openChat() {
   $('chatPanel').classList.add('show');
   pollChat(true);
@@ -1840,10 +1915,16 @@ async function sendChatFile(file) {
 setupTooltip();
 buildEmojiBar();
 
+$('updBtn').addEventListener('click', toggleUpd);
 $('expBtn').addEventListener('click', toggleExpiring);
 $('bellBtn').addEventListener('click', toggleNotifications);
 
+// Clicking a row in any expiry list opens that AT folder
 $('expList').addEventListener('click', e => {
+  const row = e.target.closest('.exp-item');
+  if (row) openAtFolder(row.dataset.at);
+});
+$('updList').addEventListener('click', e => {
   const row = e.target.closest('.exp-item');
   if (row) openAtFolder(row.dataset.at);
 });
@@ -1896,7 +1977,7 @@ $('chatList').addEventListener('click', e => {
   }
 });
 
-// Check for new messages every 5 seconds, even when the chat panel is closed
+// Check for new chat messages every 5 seconds, even when the chat panel is closed
 setInterval(() => {
   if (!$('chatPanel').classList.contains('show')) pollChat(false);
 }, 5000);
