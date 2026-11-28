@@ -2070,10 +2070,17 @@ function toggleAi() {
   }
 }
 
+let aiLastAt = '';
+
 async function sendAi() {
   const input = $('aiInput');
   const q = input.value.trim();
   if (!q) return;
+
+  // Remember the last AT number, so follow-up questions still refer to it
+  const found = q.match(/AT\s*\d+/i);
+  if (found) aiLastAt = found[0].replace(/\s+/g, ' ').toUpperCase();
+  const sendQ = (!found && aiLastAt) ? q + ' (about ' + aiLastAt + ')' : q;
 
   input.value = '';
   aiAdd('me', q);
@@ -2085,7 +2092,7 @@ async function sendAi() {
   $('aiSend').disabled = true;
 
   try {
-    const answer = await runServer('askBot', q);
+    const answer = await runServer('askBot', sendQ);
     typing.remove();
     aiAdd('bot', answer);
   } catch (e) {
@@ -2095,7 +2102,7 @@ async function sendAi() {
     $('aiSend').disabled = false;
   }
 }
-
+  
 // ============================================================
 // EVENTS
 // ============================================================
